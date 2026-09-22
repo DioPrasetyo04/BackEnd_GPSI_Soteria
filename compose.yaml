@@ -1,0 +1,52 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: app_backend-GPSI-Soteria
+    restart: unless-stopped
+    # Port 3000 tidak lagi diekspos ke host secara langsung demi keamanan, 
+    # trafik akan dihandle oleh reverse proxy NGINX.
+    # ports:
+    #   - "${PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - HOST=0.0.0.0
+    volumes:
+      # Mount direktori project lokal ke container untuk hot-reloading (nodemon)
+      - .:/var/www
+      # Anonymous volume agar node_modules Linux di dalam container tidak tertimpa oleh host Windows
+      - /var/www/node_modules
+      # Persistent volume untuk file yang diunggah via Multer
+      - app_uploads:/var/www/public
+    networks:
+      - soteria_net
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-GPSI-Soteria
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Mount konfigurasi NGINX
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # (Opsional) mount direktori public agar NGINX bisa menyajikan file statis secara langsung
+      - app_uploads:/var/www/public:ro
+    depends_on:
+      - app
+    networks:
+      - soteria_net
+
+networks:
+  soteria_net:
+    driver: bridge
+
+volumes:
+  app_uploads:
+    driver: local

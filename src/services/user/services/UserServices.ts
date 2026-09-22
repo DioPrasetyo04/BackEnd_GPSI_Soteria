@@ -8,7 +8,7 @@ import { isValidEmail } from "../../../utils/helpers";
 import InvariantError from "../../../exceptions/invariantError";
 import NotFoundError from "../../../exceptions/notFoundError";
 import bcrypt from "bcryptjs";
-import { ClientError } from "src/exceptions";
+import ClientError from "../../../exceptions/clientError";
 
 const SALT_ROUNDS = 10;
 
