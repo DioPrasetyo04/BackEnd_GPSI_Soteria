@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      roleUser @default(PENGELOLA)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  authentication authentication?
+
+  @@index([role])
+}
+
+model Renungan {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String
+  description String
+  image       String
+  author      String
+  category    String   @default("Renungan")
+  publishedAt DateTime @default(now()) @map("published_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("renungan")
+}
+
+model Jadwal {
+  id          String   @id @default(cuid())
+  date        DateTime @db.Date
+  time        String
+  activity    String
+  organizer   String
+  location    String
+  description String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([date])
+  @@map("jadwal")
+}
+
+model Gallery {
+  id         String   @id @default(cuid())
+  title      String
+  category   String
+  image      String
+  alt        String
+  date       DateTime @db.Date
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  highlight  Boolean  @default(false)
+  showInHome Boolean  @default(false)
+
+  @@index([date])
+  @@map("gallery")
+}
+
+model Organization {
+  id        String               @id @default(cuid())
+  category  OrganizationCategory
+  position  String
+  name      String?
+  phone     String?
+  fax       String?
+  order     Int                  @default(0)
+  isActive  Boolean              @default(true)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  @@index([category])
+  @@index([order])
+  @@map("organization")
+}
+
+model Warta {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String
+  fileUrl     String   @map("file_url")
+  publishedAt DateTime @default(now()) @map("published_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([publishedAt])
+  @@map("warta")
+}
+
+model authentication {
+  id        String   @id @default(cuid())
+  userId    String   @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  token     String
+  expiresAt DateTime
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("authentication")
+}
+
+enum OrganizationCategory {
+  PENGURUS_HARIAN
+  KOORDINATOR_SEKTOR
+}
+
+enum roleUser {
+  ADMIN
+  SUPER_ADMIN
+  PENGELOLA
+  KOORSEK
+  PHMJ
+  MAJELIS
+}
