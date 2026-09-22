@@ -63,4 +63,4 @@ scratch/
 # ==============================================================================
 .agents/skills
 .claude/skills
-/windsurf/skills
+.windsurf/skills
