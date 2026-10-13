@@ -1,8 +1,14 @@
 import express from "express";
 import { validateRequest } from "../../../middlewares/ValidateRequest";
-import { authSchema } from "../validator/AuthenticationValidator";
+import {
+  authSchema,
+  googleAuthSchema,
+  facebookAuthSchema,
+} from "../validator/AuthenticationValidator";
 import {
   login,
+  googleLogin,
+  facebookLogin,
   register,
   logout,
 } from "../controllers/AuthenticationController";
@@ -13,9 +19,11 @@ const authRoutes: express.Router = express.Router();
 /**
  * Authentication Routes
  *
- * POST /api/auth/register → Registrasi akun user baru
- * POST /api/auth/login    → Login & peroleh JWT token
- * POST /api/auth/logout   → Logout & hapus sesi token (Protected via verifyToken)
+ * POST /api/soteria/v1/auth/register → Registrasi akun user baru
+ * POST /api/soteria/v1/auth/login    → Login email-password & peroleh JWT token
+ * POST /api/soteria/v1/auth/google   → Login via Google Identity Services ID Token
+ * POST /api/soteria/v1/auth/facebook → Login via Facebook User Access Token
+ * POST /api/soteria/v1/auth/logout   → Logout & hapus sesi token (Protected via verifyToken)
  */
 authRoutes.post(
   "/login",
@@ -23,8 +31,14 @@ authRoutes.post(
   login,
 );
 
+authRoutes.post("/google", validateRequest(googleAuthSchema), googleLogin);
+
+authRoutes.post("/facebook", validateRequest(facebookAuthSchema), facebookLogin);
+
 authRoutes.post("/register", validateRequest(authSchema), register);
 
 authRoutes.post("/logout", verifyToken, logout);
 
 export default authRoutes;
+
+

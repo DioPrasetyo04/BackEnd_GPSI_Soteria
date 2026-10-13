@@ -1,10 +1,14 @@
 import type { Prisma } from "../../../generated/prisma/client";
-import type { JadwalInterface } from "../data_interfaces/JadwalInterface";
+import type {
+  JadwalInterface,
+  PaginatedJadwalResult,
+  JadwalQueryOptions,
+} from "../data_interfaces/JadwalInterface";
 
 export interface JadwalInterfaceRepository {
   createJadwal(data: Prisma.JadwalCreateInput): Promise<JadwalInterface>;
   getJadwal(id: string): Promise<JadwalInterface | null>;
-  getAllJadwal(): Promise<JadwalInterface[]>;
+  getAllJadwal(options?: JadwalQueryOptions): Promise<PaginatedJadwalResult>;
   updateJadwal(
     id: string,
     data: Prisma.JadwalUpdateInput,

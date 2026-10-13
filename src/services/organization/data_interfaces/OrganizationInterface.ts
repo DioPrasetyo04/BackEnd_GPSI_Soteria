@@ -14,3 +14,36 @@ export interface OrganizationInterface {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type OrganizationSortOption =
+  | "default"
+  | "order_asc"
+  | "order_desc"
+  | "name_asc"
+  | "name_desc"
+  | "newest"
+  | "oldest";
+
+export interface OrganizationQueryOptions {
+  q?: string;
+  category?: OrganizationCategoryType;
+  sort?: OrganizationSortOption;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  totalItems: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface PaginatedOrganizationResult {
+  items: OrganizationInterface[];
+  pagination: PaginationMeta;
+  organization: OrganizationInterface[];
+}
+

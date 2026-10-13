@@ -1,4 +1,8 @@
-import type { GalleryInterface } from "../data_interfaces/GalleryInterface";
+import type {
+  GalleryInterface,
+  GalleryQueryOptions,
+  PaginatedGalleryResult,
+} from "../data_interfaces/GalleryInterface";
 import type { GalleryInterfaceRepository } from "../interfaces/IGalleryRepositories";
 import type { Prisma } from "../../../generated/prisma/client";
 import { InvariantError, NotFoundError } from "../../../exceptions";
@@ -9,8 +13,10 @@ export class GalleryServices {
     private readonly galleryRepository: GalleryInterfaceRepository,
   ) {}
 
-  async getAllGallery(): Promise<GalleryInterface[]> {
-    return this.galleryRepository.getAllGallery();
+  async getAllGallery(
+    options?: GalleryQueryOptions,
+  ): Promise<PaginatedGalleryResult> {
+    return this.galleryRepository.getAllGallery(options);
   }
 
   async getGalleryById(id: string): Promise<GalleryInterface> {

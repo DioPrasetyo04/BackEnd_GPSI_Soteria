@@ -1,52 +1,80 @@
-import type { Renungan } from "../data_interfaces/RenunganInterface";
-import type { RenunganInterfaceRepository } from "../interfaces/IRenunganRepositories";
 import type { Prisma } from "../../../generated/prisma/client";
+import type {
+  Renungan,
+  RenunganListOptions,
+  RenunganPaginatedResult,
+} from "../data_interfaces/RenunganInterface";
+import type { RenunganInterfaceRepository } from "../interfaces/IRenunganRepositories";
 import { prisma } from "../../../config/database";
+import {
+  buildWhereClause,
+  buildOrderBy,
+  buildPaginationParams,
+  buildPaginationMeta,
+} from "../builders";
 
 export class RenunganRepositories implements RenunganInterfaceRepository {
   async createRenungan(data: Prisma.RenunganCreateInput): Promise<Renungan> {
-    const createRenungan = await prisma.renungan.create({
-      data: data,
+    return prisma.renungan.create({
+      data,
     });
-
-    return createRenungan;
   }
+
   async getRenungan(slug: string): Promise<Renungan | null> {
-    const spesRenungan = await prisma.renungan.findUnique({
+    return prisma.renungan.findUnique({
       where: {
-        slug: slug,
+        slug,
       },
     });
-    return spesRenungan;
   }
-  async getAllRenungan(): Promise<Renungan[]> {
-    const allRenungan = await prisma.renungan.findMany({
-      orderBy: {
-        publishedAt: "desc",
-      },
-    });
 
-    return allRenungan;
+  async getAllRenungan(
+    options?: RenunganListOptions,
+  ): Promise<RenunganPaginatedResult> {
+    const { page, limit, skip, take } = buildPaginationParams(
+      options?.page,
+      options?.limit,
+    );
+    const where = buildWhereClause(options);
+    const orderBy = buildOrderBy(options?.sort);
+
+    const [totalItems, items] = await prisma.$transaction([
+      prisma.renungan.count({ where }),
+      prisma.renungan.findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+      }),
+    ]);
+
+    const pagination = buildPaginationMeta(totalItems, page, limit);
+
+    return {
+      items,
+      pagination,
+    };
   }
+
   async updateRenungan(
     slug: string,
     data: Prisma.RenunganUpdateInput,
   ): Promise<Renungan> {
-    const updateRenungan = await prisma.renungan.update({
+    return prisma.renungan.update({
       where: {
-        slug: slug,
+        slug,
       },
-      data: data,
+      data,
     });
-
-    return updateRenungan;
   }
+
   async deleteRenungan(slug: string): Promise<boolean> {
     const deleteRenungan = await prisma.renungan.delete({
       where: {
-        slug: slug,
+        slug,
       },
     });
     return !!deleteRenungan;
   }
 }
+

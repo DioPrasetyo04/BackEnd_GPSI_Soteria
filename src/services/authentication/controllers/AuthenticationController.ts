@@ -1,5 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
-import { authSchema } from "../validator/AuthenticationValidator";
+import {
+  authSchema,
+  googleAuthSchema,
+  facebookAuthSchema,
+} from "../validator/AuthenticationValidator";
+
 import { AuthRepositories } from "../repositories/AuthRepositories";
 import { AuthServices } from "../services/AuthServices";
 import { UserRepositories } from "../../user/repositories/UserRpositories";
@@ -32,6 +37,36 @@ export const login = async (
     next(error);
   }
 };
+
+export const googleLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const parsedData = googleAuthSchema.parse(req.body);
+    const result = await authServices.googleLogin(parsedData.idToken);
+    responses(res, 200, "Login Google berhasil", result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const facebookLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const parsedData = facebookAuthSchema.parse(req.body);
+    const result = await authServices.facebookLogin(parsedData.accessToken);
+    responses(res, 200, "Login Facebook berhasil", result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 
 export const register = async (
   req: Request,

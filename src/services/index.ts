@@ -13,8 +13,9 @@ allRoutes.use("/auth", authRoutes);
 allRoutes.use("/jadwal", jadwalRoutes);
 allRoutes.use("/renungan", renunganRoutes);
 allRoutes.use("/warta", wartaRoutes);
-allRoutes.use("/user", userRoutes);
+allRoutes.use("/users", userRoutes);
 allRoutes.use("/organization", organizationRoutes);
 allRoutes.use("/gallery", galleryRoutes);
+allRoutes.use("/galeri", galleryRoutes);
 
 export default allRoutes;

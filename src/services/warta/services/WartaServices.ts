@@ -1,4 +1,8 @@
-import type { WartaInterface } from "../data_interfaces/WartaInterface";
+import type {
+  WartaInterface,
+  WartaQueryOptions,
+  WartaPaginatedResult,
+} from "../data_interfaces/WartaInterface";
 import type { WartaInterfaceRepository } from "../interfaces/IWartaRepositories";
 import type { Prisma } from "../../../generated/prisma/client";
 import { InvariantError, NotFoundError } from "../../../exceptions";
@@ -10,8 +14,10 @@ export class WartaServices {
     private readonly wartaRepository: WartaInterfaceRepository,
   ) {}
 
-  async getAllWarta(): Promise<WartaInterface[]> {
-    return this.wartaRepository.getAllWarta();
+  async getAllWarta(
+    options?: WartaQueryOptions,
+  ): Promise<WartaPaginatedResult> {
+    return this.wartaRepository.getAllWarta(options);
   }
 
   async getWarta(slug: string): Promise<WartaInterface> {

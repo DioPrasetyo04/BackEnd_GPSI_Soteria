@@ -3,7 +3,13 @@ import type { Prisma } from "../../../generated/prisma/client";
 import type {
   UserInterface,
   UserPublicInterface,
+  UserQueryOptions,
+  PaginatedUserResult,
 } from "../data_interfaces/UserInterface";
+import {
+  buildPaginationParams,
+  buildPaginationMeta,
+} from "../builders";
 import { isValidEmail } from "../../../utils/helpers";
 import InvariantError from "../../../exceptions/invariantError";
 import NotFoundError from "../../../exceptions/notFoundError";
@@ -92,11 +98,24 @@ export class UserServices {
   }
 
   /**
-   * Ambil semua user (tanpa password).
+   * Ambil semua user dengan pencarian, pengurutan, dan paginasi (tanpa password).
    */
-  async getAllUsers(): Promise<UserPublicInterface[]> {
-    const users = await this.userRepository.getAllUser();
-    return users.map(toPublic);
+  async getAllUsers(
+    options?: UserQueryOptions,
+  ): Promise<PaginatedUserResult> {
+    const { page, limit } = buildPaginationParams(
+      options?.page,
+      options?.limit,
+    );
+    const { items, totalItems } = await this.userRepository.getAllUser(options);
+    const publicUsers = items.map(toPublic);
+    const pagination = buildPaginationMeta(totalItems, page, limit);
+
+    return {
+      items: publicUsers,
+      pagination,
+      users: publicUsers,
+    };
   }
 
   /**

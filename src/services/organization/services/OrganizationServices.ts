@@ -1,6 +1,8 @@
 import type {
   OrganizationCategoryType,
   OrganizationInterface,
+  OrganizationQueryOptions,
+  PaginatedOrganizationResult,
 } from "../data_interfaces/OrganizationInterface";
 import type { OrganizationInterfaceRepository } from "../interfaces/IOrganizationRepositories";
 import type { Prisma } from "../../../generated/prisma/client";
@@ -12,9 +14,9 @@ export class OrganizationServices {
   ) {}
 
   async getAllOrganizations(
-    category?: OrganizationCategoryType,
-  ): Promise<OrganizationInterface[]> {
-    return this.organizationRepository.getAllOrganizations(category);
+    options?: OrganizationQueryOptions | OrganizationCategoryType,
+  ): Promise<PaginatedOrganizationResult> {
+    return this.organizationRepository.getAllOrganizations(options);
   }
 
   async getOrganizationById(id: string): Promise<OrganizationInterface> {

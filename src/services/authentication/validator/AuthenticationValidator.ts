@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 export const authSchema = z
   .object({
     name: z
@@ -19,5 +20,24 @@ export const authSchema = z
       .regex(/[^A-Za-z0-9]/, {
         message: "Password harus mengandung minimal 1 karakter spesial",
       }),
+    role: z
+      .enum(["ADMIN", "SUPER_ADMIN", "PENGELOLA", "KOORSEK", "PHMJ", "MAJELIS"])
+      .optional(),
   })
   .strict();
+
+export const googleAuthSchema = z
+  .object({
+    idToken: z.string().min(1, { message: "Google ID Token wajib diisi" }),
+  })
+  .strict();
+
+export const facebookAuthSchema = z
+  .object({
+    accessToken: z
+      .string()
+      .min(1, { message: "Facebook Access Token wajib diisi" }),
+  })
+  .strict();
+
+

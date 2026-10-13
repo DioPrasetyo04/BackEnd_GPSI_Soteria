@@ -70,3 +70,39 @@ export const renunganUpdateSchema = z.object({
 
 export type RenunganCreateInput = z.infer<typeof renunganCreateSchema>;
 export type RenunganUpdateInput = z.infer<typeof renunganUpdateSchema>;
+
+/**
+ * Schema untuk validasi query parameter pencarian, pengurutan, dan paginasi renungan
+ * (GET /api/renungan).
+ */
+export const renunganListQuerySchema = z.object({
+  q: z
+    .string({ message: "Parameter q harus berupa string" })
+    .trim()
+    .max(100, { message: "Kata kunci pencarian maksimal 100 karakter" })
+    .optional()
+    .transform((val) => (val && val.length > 0 ? val : undefined)),
+  sort: z
+    .enum(["newest", "oldest", "title_asc", "title_desc"], {
+      message:
+        "Parameter sort tidak valid. Pilihan: newest, oldest, title_asc, title_desc",
+    })
+    .default("newest"),
+  page: z.coerce
+    .number({ message: "Parameter page harus berupa angka" })
+    .int({ message: "Parameter page harus berupa bilangan bulat" })
+    .min(1, { message: "Parameter page minimal 1" })
+    .default(1),
+  limit: z.coerce
+    .number({ message: "Parameter limit harus berupa angka" })
+    .int({ message: "Parameter limit harus berupa bilangan bulat" })
+    .min(1, { message: "Parameter limit minimal 1" })
+    .max(100, { message: "Parameter limit maksimal 100" })
+    .default(10),
+});
+
+export type RenunganListQueryInput = z.infer<typeof renunganListQuerySchema>;
+
+// Alias agar konsisten dengan konvensi penamaan seperti di JadwalSchema
+export const renunganQuerySchema = renunganListQuerySchema;
+export type RenunganQueryInput = RenunganListQueryInput;

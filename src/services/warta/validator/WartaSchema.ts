@@ -33,3 +33,40 @@ export const wartaUpdateSchema = z.object({
 
 export type WartaCreateInput = z.infer<typeof wartaCreateSchema>;
 export type WartaUpdateInput = z.infer<typeof wartaUpdateSchema>;
+
+/**
+ * Schema untuk validasi query parameter pencarian, pengurutan, dan paginasi warta
+ * (GET /api/warta).
+ */
+export const wartaListQuerySchema = z.object({
+  q: z
+    .string({ message: "Parameter q harus berupa string" })
+    .trim()
+    .max(100, { message: "Kata kunci pencarian maksimal 100 karakter" })
+    .optional()
+    .transform((val) => (val && val.length > 0 ? val : undefined)),
+  sort: z
+    .enum(["newest", "oldest", "title_asc", "title_desc"], {
+      message:
+        "Parameter sort tidak valid. Pilihan: newest, oldest, title_asc, title_desc",
+    })
+    .default("newest"),
+  page: z.coerce
+    .number({ message: "Parameter page harus berupa angka" })
+    .int({ message: "Parameter page harus berupa bilangan bulat" })
+    .min(1, { message: "Parameter page minimal 1" })
+    .default(1),
+  limit: z.coerce
+    .number({ message: "Parameter limit harus berupa angka" })
+    .int({ message: "Parameter limit harus berupa bilangan bulat" })
+    .min(1, { message: "Parameter limit minimal 1" })
+    .max(100, { message: "Parameter limit maksimal 100" })
+    .default(10),
+});
+
+export type WartaListQueryInput = z.infer<typeof wartaListQuerySchema>;
+
+// Alias agar konsisten dengan konvensi penamaan seperti di Renungan / Jadwal / Gallery
+export const wartaQuerySchema = wartaListQuerySchema;
+export type WartaQueryInput = WartaListQueryInput;
+

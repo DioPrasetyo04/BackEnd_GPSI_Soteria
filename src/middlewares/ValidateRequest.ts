@@ -33,3 +33,37 @@ export const validateRequest =
       next(error);
     }
   };
+
+/**
+ * Middleware validasi request query parameters menggunakan Zod schema.
+ *
+ * - Validasi gagal → 400 Bad Request (bukan 500!)
+ * - Validasi berhasil → req.query di-replace dengan query yang sudah divalidasi dan dinormalisasi
+ * - Error non-Zod diteruskan ke ErrorsHandler via next(error)
+ */
+export const validateQuery =
+  (schema: z.ZodTypeAny) =>
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const parsed = await schema.parseAsync(req.query);
+      Object.defineProperty(req, "query", {
+        value: parsed,
+        writable: true,
+        configurable: true,
+        enumerable: true,
+      });
+      res.locals.validatedQuery = parsed;
+      next();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.issues.map((issue) => issue.message);
+
+        responses(res, 400, "Validasi request gagal", {
+          errors: errorMessages,
+        });
+        return;
+      }
+
+      next(error);
+    }
+  };

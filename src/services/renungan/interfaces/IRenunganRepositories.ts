@@ -1,10 +1,16 @@
 import type { Prisma } from "../../../generated/prisma/client";
-import type { Renungan } from "../data_interfaces/RenunganInterface";
+import type {
+  Renungan,
+  RenunganListOptions,
+  RenunganPaginatedResult,
+} from "../data_interfaces/RenunganInterface";
 
 export interface RenunganInterfaceRepository {
   createRenungan(data: Prisma.RenunganCreateInput): Promise<Renungan>;
   getRenungan(slug: string): Promise<Renungan | null>;
-  getAllRenungan(): Promise<Renungan[]>;
+  getAllRenungan(
+    options?: RenunganListOptions,
+  ): Promise<RenunganPaginatedResult>;
   updateRenungan(
     slug: string,
     data: Prisma.RenunganUpdateInput,

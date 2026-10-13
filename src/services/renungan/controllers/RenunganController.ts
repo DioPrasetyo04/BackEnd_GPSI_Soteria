@@ -3,6 +3,7 @@ import { RenunganRepositories } from "../repositories/RenunganRepository";
 import { RenunganServices } from "../services/RenunganServices";
 import responses from "../../../utils/response";
 import { deleteUploadedFile } from "../../../utils/multer";
+import type { RenunganQueryInput } from "../validator/RenunganSchema";
 
 // Inisiasi dependency injection
 const renunganRepo = new RenunganRepositories();
@@ -51,7 +52,7 @@ export const createRenungan = async (
 
 /**
  * GET /api/renungan
- * Ambil semua data renungan
+ * Ambil daftar data renungan dengan pencarian, pengurutan, dan paginasi
  */
 export const getAllRenungan = async (
   req: Request,
@@ -59,8 +60,10 @@ export const getAllRenungan = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const renungan = await renunganService.getAllRenungan();
-    responses(res, 200, "Berhasil mengambil data semua renungan", { renungan });
+    const query = (res.locals.validatedQuery ||
+      req.query) as unknown as RenunganQueryInput;
+    const result = await renunganService.getAllRenungan(query);
+    responses(res, 200, "Data renungan berhasil diambil", result);
   } catch (error) {
     next(error);
   }

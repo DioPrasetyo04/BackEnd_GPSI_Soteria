@@ -1,9 +1,8 @@
-import type { Prisma } from "../../../generated/prisma/client";
 import type { Auth } from "../data_interfaces/AuthenticationInterface";
-import type { UserPublicInterface } from "../../user/data_interfaces/UserInterface";
 
 export interface AuthInterfaceRepositories {
-  register(data: Prisma.UserCreateInput): Promise<UserPublicInterface>;
-  login(email: string): Promise<Auth>;
+  saveSession(userId: string, token: string, expiresAt: Date): Promise<Auth>;
+  findByUserId(userId: string): Promise<Auth | null>;
   logout(tokenOrUserId: string): Promise<void>;
 }
+
