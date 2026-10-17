@@ -2,7 +2,6 @@ import type { Request, Response, NextFunction } from "express";
 import { JadwalRepositories } from "../repositories/JadwalRepository";
 import { JadwalServices } from "../services/JadwalServices";
 import responses from "../../../utils/response";
-import type { JadwalQueryInput } from "../validator/JadwalSchema";
 
 const jadwalRepo = new JadwalRepositories();
 const jadwalService = new JadwalServices(jadwalRepo);
@@ -26,9 +25,8 @@ export const getAllJadwal = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const query = (res.locals.validatedQuery || req.query) as unknown as JadwalQueryInput;
-    const result = await jadwalService.getAllJadwal(query);
-    responses(res, 200, "Data jadwal berhasil diambil", result);
+    const jadwal = await jadwalService.getAllJadwal();
+    responses(res, 200, "Berhasil mengambil semua data jadwal", { jadwal });
   } catch (error) {
     next(error);
   }

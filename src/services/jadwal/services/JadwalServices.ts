@@ -1,8 +1,4 @@
-import type {
-  JadwalInterface,
-  PaginatedJadwalResult,
-  JadwalQueryOptions,
-} from "../data_interfaces/JadwalInterface";
+import type { JadwalInterface } from "../data_interfaces/JadwalInterface";
 import type { JadwalInterfaceRepository } from "../interfaces/IJadwalRepositories";
 import type { Prisma } from "../../../generated/prisma/client";
 import { NotFoundError } from "../../../exceptions";
@@ -12,10 +8,8 @@ export class JadwalServices {
     private readonly jadwalRepository: JadwalInterfaceRepository,
   ) {}
 
-  async getAllJadwal(
-    options?: JadwalQueryOptions,
-  ): Promise<PaginatedJadwalResult> {
-    return this.jadwalRepository.getAllJadwal(options);
+  async getAllJadwal(): Promise<JadwalInterface[]> {
+    return this.jadwalRepository.getAllJadwal();
   }
 
   async getJadwalById(id: string): Promise<JadwalInterface> {

@@ -93,33 +93,23 @@ const generateSlug = (input: string): string => {
   return slug ? `${slug}-${randomNumber}` : `renungan-${randomNumber}`;
 };
 
-const expiresInMs = (exp: number | string = "1h"): number => {
-  if (typeof exp === "number") {
-    return exp;
-  }
-
-  const expString = exp;
-  const match = expString.match(/^(\d+)([smhd])$/i);
-
-  if (!match) {
-    return 60 * 60 * 1000;
-  }
-
-  const value = Number(match[1]);
-  const unit = match[2].toLowerCase();
-
-  switch (unit) {
+const expiresInMs = (val: string): number => {
+  const match = String(val).match(/^(\d+)([smhd])$/);
+  if (!match) return 3600 * 1000;
+  const num = parseInt(match[1], 10);
+  switch (match[2]) {
     case "s":
-      return value * 1000;
+      return num * 1000;
     case "m":
-      return value * 60 * 1000;
+      return num * 60 * 1000;
     case "h":
-      return value * 60 * 60 * 1000;
+      return num * 3600 * 1000;
     case "d":
-      return value * 24 * 60 * 60 * 1000;
+      return num * 86400 * 1000;
     default:
-      return 60 * 60 * 1000;
+      return 3600 * 1000;
   }
 };
 
 export { isValidEmail, generateSlug, expiresInMs };
+

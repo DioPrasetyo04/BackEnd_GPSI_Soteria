@@ -2,7 +2,6 @@ import type { Request, Response, NextFunction } from "express";
 import { UserRepositories } from "../repositories/UserRpositories";
 import { UserServices } from "../services/UserServices";
 import responses from "../../../utils/response";
-import type { UserQueryInput } from "../validator/userSchema";
 
 /**
  * Controller adalah satu-satunya layer yang boleh memanggil `responses()`.
@@ -38,7 +37,7 @@ export const createUser = async (
 
 /**
  * GET /api/users
- * Ambil daftar user dengan pencarian, pengurutan, dan paginasi
+ * Ambil semua user
  */
 export const getAllUsers = async (
   req: Request,
@@ -46,10 +45,8 @@ export const getAllUsers = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const query = (res.locals.validatedQuery ||
-      req.query) as unknown as UserQueryInput;
-    const result = await userServices.getAllUsers(query);
-    responses(res, 200, "Berhasil mengambil data semua user", result);
+    const users = await userServices.getAllUsers();
+    responses(res, 200, "Berhasil mengambil data semua user", { users });
   } catch (error) {
     next(error);
   }

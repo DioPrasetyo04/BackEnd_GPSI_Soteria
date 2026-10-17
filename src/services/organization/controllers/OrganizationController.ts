@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { OrganizationRepositories } from "../repositories/OrganizationRepository";
 import { OrganizationServices } from "../services/OrganizationServices";
+import type { OrganizationCategoryType } from "../data_interfaces/OrganizationInterface";
 import responses from "../../../utils/response";
-import type { OrganizationQueryInput } from "../validator/OrganizationSchema";
 
 const orgRepo = new OrganizationRepositories();
 const orgService = new OrganizationServices(orgRepo);
@@ -28,10 +28,13 @@ export const getAllOrganizations = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const query = (res.locals.validatedQuery ||
-      req.query) as unknown as OrganizationQueryInput;
-    const result = await orgService.getAllOrganizations(query);
-    responses(res, 200, "Berhasil mengambil data struktur organisasi", result);
+    const { category } = req.query;
+    const organization = await orgService.getAllOrganizations(
+      category as OrganizationCategoryType | undefined,
+    );
+    responses(res, 200, "Berhasil mengambil data struktur organisasi", {
+      organization,
+    });
   } catch (error) {
     next(error);
   }

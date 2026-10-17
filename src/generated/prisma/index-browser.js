@@ -126,6 +126,10 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   password: 'password',
   role: 'role',
+  status: 'status',
+  approvalToken: 'approvalToken',
+  lastNotificationSentAt: 'lastNotificationSentAt',
+  rejectionReason: 'rejectionReason',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -223,6 +227,12 @@ exports.roleUser = exports.$Enums.roleUser = {
   KOORSEK: 'KOORSEK',
   PHMJ: 'PHMJ',
   MAJELIS: 'MAJELIS'
+};
+
+exports.UserStatus = exports.$Enums.UserStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
 };
 
 exports.OrganizationCategory = exports.$Enums.OrganizationCategory = {

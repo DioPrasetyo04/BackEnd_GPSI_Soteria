@@ -3,18 +3,11 @@ import type { Prisma } from "../../../generated/prisma/client";
 import type {
   UserInterface,
   UserPublicInterface,
-  UserQueryOptions,
-  PaginatedUserResult,
 } from "../data_interfaces/UserInterface";
-import {
-  buildPaginationParams,
-  buildPaginationMeta,
-} from "../builders";
 import { isValidEmail } from "../../../utils/helpers";
 import InvariantError from "../../../exceptions/invariantError";
 import NotFoundError from "../../../exceptions/notFoundError";
 import bcrypt from "bcryptjs";
-import ClientError from "../../../exceptions/clientError";
 
 const SALT_ROUNDS = 10;
 
@@ -55,26 +48,6 @@ export class UserServices {
       SALT_ROUNDS,
     );
 
-    if (!hashedPassword) {
-      throw new InvariantError("Hash password gagal dilakukan");
-    }
-
-    // check role
-    const roleUser = [
-      "ADMIN",
-      "SUPER_ADMIN",
-      "PENGELOLA",
-      "KOORSEK",
-      "PHMJ",
-      "MAJELIS",
-    ];
-
-    for (let i = 0; i < roleUser.length; i++) {
-      if (data.role === roleUser[i]) {
-        throw new ClientError("Role data tidak valid");
-      }
-    }
-
     const newUser = await this.userRepository.createUser({
       ...data,
       password: hashedPassword,
@@ -98,24 +71,11 @@ export class UserServices {
   }
 
   /**
-   * Ambil semua user dengan pencarian, pengurutan, dan paginasi (tanpa password).
+   * Ambil semua user (tanpa password).
    */
-  async getAllUsers(
-    options?: UserQueryOptions,
-  ): Promise<PaginatedUserResult> {
-    const { page, limit } = buildPaginationParams(
-      options?.page,
-      options?.limit,
-    );
-    const { items, totalItems } = await this.userRepository.getAllUser(options);
-    const publicUsers = items.map(toPublic);
-    const pagination = buildPaginationMeta(totalItems, page, limit);
-
-    return {
-      items: publicUsers,
-      pagination,
-      users: publicUsers,
-    };
+  async getAllUsers(): Promise<UserPublicInterface[]> {
+    const users = await this.userRepository.getAllUser();
+    return users.map(toPublic);
   }
 
   /**
@@ -168,15 +128,5 @@ export class UserServices {
     }
 
     return this.userRepository.deleteUser(id);
-  }
-
-  async checkDataUser(email: string): Promise<UserInterface | null> {
-    const userEmail = await this.userRepository.getUserByEmail(email);
-
-    if (!userEmail) {
-      throw new NotFoundError(`User dengan email "${email}" tidak ditemukan`);
-    }
-
-    return userEmail;
   }
 }

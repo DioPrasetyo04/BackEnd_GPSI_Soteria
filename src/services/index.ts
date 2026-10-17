@@ -6,10 +6,12 @@ import wartaRoutes from "./warta/index";
 import userRoutes from "./user/index";
 import organizationRoutes from "./organization/index";
 import galleryRoutes from "./gallery/index";
+import dashboardRoutes from "./dashboard/index";
 
 const allRoutes: express.Router = express.Router();
 
 allRoutes.use("/auth", authRoutes);
+allRoutes.use("/dashboard", dashboardRoutes);
 allRoutes.use("/jadwal", jadwalRoutes);
 allRoutes.use("/renungan", renunganRoutes);
 allRoutes.use("/warta", wartaRoutes);

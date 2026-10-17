@@ -1,8 +1,4 @@
-import type {
-  Renungan,
-  RenunganListOptions,
-  RenunganPaginatedResult,
-} from "../data_interfaces/RenunganInterface";
+import type { Renungan } from "../data_interfaces/RenunganInterface";
 import type { RenunganInterfaceRepository } from "../interfaces/IRenunganRepositories";
 import type { Prisma } from "../../../generated/prisma/client";
 import { InvariantError, NotFoundError } from "../../../exceptions";
@@ -15,12 +11,10 @@ export class RenunganServices {
   ) {}
 
   /**
-   * Ambil semua data renungan dengan opsi pencarian, pengurutan, dan paginasi.
+   * Ambil semua data renungan, diurutkan berdasarkan publishedAt terbaru.
    */
-  async getAllRenungan(
-    options?: RenunganListOptions,
-  ): Promise<RenunganPaginatedResult> {
-    return await this.renunganRepository.getAllRenungan(options);
+  async getAllRenungan(): Promise<Renungan[]> {
+    return await this.renunganRepository.getAllRenungan();
   }
 
   /**

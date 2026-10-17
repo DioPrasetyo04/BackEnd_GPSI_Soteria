@@ -1,18 +1,7 @@
 import type { Prisma } from "../../../generated/prisma/client";
-import type {
-  OrganizationCategoryType,
-  OrganizationInterface,
-  OrganizationQueryOptions,
-  PaginatedOrganizationResult,
-} from "../data_interfaces/OrganizationInterface";
+import type { OrganizationInterface } from "../data_interfaces/OrganizationInterface";
 import type { OrganizationInterfaceRepository } from "../interfaces/IOrganizationRepositories";
 import { prisma } from "../../../config/database";
-import {
-  buildWhereClause,
-  buildOrderBy,
-  buildPaginationParams,
-  buildPaginationMeta,
-} from "../builders";
 
 export class OrganizationRepositories
   implements OrganizationInterfaceRepository
@@ -28,35 +17,12 @@ export class OrganizationRepositories
   }
 
   async getAllOrganizations(
-    options?: OrganizationQueryOptions | OrganizationCategoryType,
-  ): Promise<PaginatedOrganizationResult> {
-    const queryOptions: OrganizationQueryOptions =
-      typeof options === "string" ? { category: options } : options || {};
-
-    const { page, limit, skip, take } = buildPaginationParams(
-      queryOptions.page,
-      queryOptions.limit,
-    );
-    const where = buildWhereClause(queryOptions);
-    const orderBy = buildOrderBy(queryOptions.sort);
-
-    const [totalItems, items] = await prisma.$transaction([
-      prisma.organization.count({ where }),
-      prisma.organization.findMany({
-        where,
-        orderBy,
-        skip,
-        take,
-      }),
-    ]);
-
-    const pagination = buildPaginationMeta(totalItems, page, limit);
-
-    return {
-      items,
-      pagination,
-      organization: items,
-    };
+    category?: "PENGURUS_HARIAN" | "KOORDINATOR_SEKTOR",
+  ): Promise<OrganizationInterface[]> {
+    return prisma.organization.findMany({
+      where: category ? { category } : undefined,
+      orderBy: [{ category: "asc" }, { order: "asc" }],
+    });
   }
 
   async updateOrganization(
@@ -70,5 +36,10 @@ export class OrganizationRepositories
     const deleted = await prisma.organization.delete({ where: { id } });
     return !!deleted;
   }
-}
 
+  async countOrganization(
+    where?: Prisma.OrganizationWhereInput,
+  ): Promise<number> {
+    return prisma.organization.count({ where });
+  }
+}

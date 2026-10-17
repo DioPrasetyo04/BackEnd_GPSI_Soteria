@@ -8,17 +8,22 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      roleUser @default(PENGELOLA)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                     String     @id @default(cuid())
+  name                   String
+  email                  String     @unique
+  password               String
+  role                   roleUser   @default(PENGELOLA)
+  status                 UserStatus @default(PENDING)
+  approvalToken          String?    @unique @map("approval_token")
+  lastNotificationSentAt DateTime?  @map("last_notification_sent_at")
+  rejectionReason        String?    @map("rejection_reason")
+  createdAt              DateTime   @default(now()) @map("created_at")
+  updatedAt              DateTime   @updatedAt @map("updated_at")
 
   authentication authentication?
 
   @@index([role])
+  @@index([status])
 }
 
 model Renungan {
@@ -123,4 +128,10 @@ enum roleUser {
   KOORSEK
   PHMJ
   MAJELIS
+}
+
+enum UserStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

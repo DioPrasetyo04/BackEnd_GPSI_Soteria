@@ -3,7 +3,6 @@ import { GalleryRepositories } from "../repositories/GalleryRepository";
 import { GalleryServices } from "../services/GalleryServices";
 import responses from "../../../utils/response";
 import { deleteUploadedFile } from "../../../utils/multer";
-import type { GalleryQueryInput } from "../validator/GallerySchema";
 
 const galleryRepo = new GalleryRepositories();
 const galleryService = new GalleryServices(galleryRepo);
@@ -46,9 +45,8 @@ export const getAllGallery = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const query = (res.locals.validatedQuery || req.query) as unknown as GalleryQueryInput;
-    const result = await galleryService.getAllGallery(query);
-    responses(res, 200, "Berhasil mengambil data semua galeri", result);
+    const gallery = await galleryService.getAllGallery();
+    responses(res, 200, "Berhasil mengambil data semua galeri", { gallery });
   } catch (error) {
     next(error);
   }

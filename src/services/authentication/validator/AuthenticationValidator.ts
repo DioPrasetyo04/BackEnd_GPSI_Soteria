@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 export const authSchema = z
@@ -39,5 +40,29 @@ export const facebookAuthSchema = z
       .min(1, { message: "Facebook Access Token wajib diisi" }),
   })
   .strict();
+
+export const refreshTokenSchema = z
+  .object({
+    refreshToken: z.string().optional(),
+    token: z.string().optional(),
+  })
+  .strict();
+
+export const resendApprovalSchema = z
+  .object({
+    email: z.string().email({ message: "Format email tidak valid" }),
+  })
+  .strict();
+
+export const processApprovalSchema = z
+  .object({
+    token: z.string().min(1, { message: "Token verifikasi wajib disertakan" }),
+    action: z.enum(["approve", "reject"], {
+      message: "Aksi harus 'approve' atau 'reject'",
+    }),
+    reason: z.string().optional(),
+  })
+  .strict();
+
 
 

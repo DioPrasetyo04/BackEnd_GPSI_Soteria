@@ -7,14 +7,10 @@ import {
   deleteWarta,
 } from "../controllers/WartaController";
 import { uploadDynamicfile } from "../../../utils/multer";
-import {
-  validateRequest,
-  validateQuery,
-} from "../../../middlewares/ValidateRequest";
+import { validateRequest } from "../../../middlewares/ValidateRequest";
 import {
   wartaCreateSchema,
   wartaUpdateSchema,
-  wartaListQuerySchema,
 } from "../validator/WartaSchema";
 
 const wartaRoutes: express.Router = express.Router();
@@ -23,7 +19,7 @@ const wartaRoutes: express.Router = express.Router();
  * Warta Routes
  *
  * POST   /api/warta       → Upload warta baru (form-data: field "fileUrl" / "file" + text fields)
- * GET    /api/warta       → Ambil daftar warta dengan pencarian, pengurutan, dan paginasi
+ * GET    /api/warta       → Ambil semua data warta (urut terbaru)
  * GET    /api/warta/:slug → Ambil detail warta by slug
  * PUT    /api/warta/:slug → Update warta (opsional upload file dokumen baru)
  * DELETE /api/warta/:slug → Hapus warta dan file dokumen dari storage
@@ -35,7 +31,7 @@ wartaRoutes.post(
   createWarta,
 );
 
-wartaRoutes.get("/", validateQuery(wartaListQuerySchema), getAllWarta);
+wartaRoutes.get("/", getAllWarta);
 
 wartaRoutes.get("/:slug", getWartaBySlug);
 

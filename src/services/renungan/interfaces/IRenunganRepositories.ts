@@ -1,21 +1,16 @@
 import type { Prisma } from "../../../generated/prisma/client";
-import type {
-  Renungan,
-  RenunganListOptions,
-  RenunganPaginatedResult,
-} from "../data_interfaces/RenunganInterface";
+import type { Renungan } from "../data_interfaces/RenunganInterface";
 
 export interface RenunganInterfaceRepository {
   createRenungan(data: Prisma.RenunganCreateInput): Promise<Renungan>;
   getRenungan(slug: string): Promise<Renungan | null>;
-  getAllRenungan(
-    options?: RenunganListOptions,
-  ): Promise<RenunganPaginatedResult>;
+  getAllRenungan(): Promise<Renungan[]>;
   updateRenungan(
     slug: string,
     data: Prisma.RenunganUpdateInput,
   ): Promise<Renungan>;
   deleteRenungan(slug: string): Promise<boolean>;
+  countRenungan(where?: Prisma.RenunganWhereInput): Promise<number>;
 }
 
 // Alias agar kompatibel dengan penamaan 'IRenunganRepositories'

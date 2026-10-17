@@ -6,14 +6,10 @@ import {
   updateOrganization,
   deleteOrganization,
 } from "../controllers/OrganizationController";
-import {
-  validateRequest,
-  validateQuery,
-} from "../../../middlewares/ValidateRequest";
+import { validateRequest } from "../../../middlewares/ValidateRequest";
 import {
   organizationCreateSchema,
   organizationUpdateSchema,
-  organizationListQuerySchema,
 } from "../validator/OrganizationSchema";
 
 const organizationRoutes: express.Router = express.Router();
@@ -22,7 +18,7 @@ const organizationRoutes: express.Router = express.Router();
  * Organization Routes
  *
  * POST   /api/organization       → Tambah pengurus baru
- * GET    /api/organization       → Ambil daftar data organisasi (search, category, sort, pagination)
+ * GET    /api/organization       → Ambil semua data (bisa filter ?category=PENGURUS_HARIAN atau KOORDINATOR_SEKTOR)
  * GET    /api/organization/:id   → Ambil pengurus by ID
  * PUT    /api/organization/:id   → Update pengurus
  * DELETE /api/organization/:id   → Hapus pengurus
@@ -33,11 +29,7 @@ organizationRoutes.post(
   createOrganization,
 );
 
-organizationRoutes.get(
-  "/",
-  validateQuery(organizationListQuerySchema),
-  getAllOrganizations,
-);
+organizationRoutes.get("/", getAllOrganizations);
 
 organizationRoutes.get("/:id", getOrganizationById);
 

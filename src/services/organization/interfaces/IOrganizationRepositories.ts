@@ -1,10 +1,5 @@
 import type { Prisma } from "../../../generated/prisma/client";
-import type {
-  OrganizationCategoryType,
-  OrganizationInterface,
-  OrganizationQueryOptions,
-  PaginatedOrganizationResult,
-} from "../data_interfaces/OrganizationInterface";
+import type { OrganizationInterface } from "../data_interfaces/OrganizationInterface";
 
 export interface OrganizationInterfaceRepository {
   createOrganization(
@@ -12,14 +7,14 @@ export interface OrganizationInterfaceRepository {
   ): Promise<OrganizationInterface>;
   getOrganization(id: string): Promise<OrganizationInterface | null>;
   getAllOrganizations(
-    options?: OrganizationQueryOptions | OrganizationCategoryType,
-  ): Promise<PaginatedOrganizationResult>;
+    category?: "PENGURUS_HARIAN" | "KOORDINATOR_SEKTOR",
+  ): Promise<OrganizationInterface[]>;
   updateOrganization(
     id: string,
     data: Prisma.OrganizationUpdateInput,
   ): Promise<OrganizationInterface>;
   deleteOrganization(id: string): Promise<boolean>;
+  countOrganization(where?: Prisma.OrganizationWhereInput): Promise<number>;
 }
-
 
 export type IOrganizationRepositories = OrganizationInterfaceRepository;

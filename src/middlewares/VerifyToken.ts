@@ -60,7 +60,7 @@ export const verifyToken = async (
         id: findUser.id,
         name: findUser.name,
         email: findUser.email,
-        role: findUser.role as Role,
+        role: ((findUser as any).role || "ADMIN") as Role,
       };
 
       return next();

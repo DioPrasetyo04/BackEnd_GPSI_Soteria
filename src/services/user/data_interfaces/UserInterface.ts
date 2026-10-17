@@ -1,10 +1,16 @@
+import type { roleUser, UserStatus } from "../../../generated/prisma/client";
+
 // Data shape yang dikembalikan Prisma (full record)
 export interface UserInterface {
   id: string;
   name: string;
   email: string;
   password: string;
-  role: string;
+  role: roleUser;
+  status: UserStatus;
+  approvalToken?: string | null;
+  lastNotificationSentAt?: Date | null;
+  rejectionReason?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -14,7 +20,8 @@ export interface UserPublicInterface {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: roleUser;
+  status: UserStatus;
   createdAt: Date;
   updatedAt: Date;
 }

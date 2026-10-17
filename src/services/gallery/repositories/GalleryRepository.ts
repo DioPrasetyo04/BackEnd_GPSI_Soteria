@@ -1,17 +1,7 @@
 import type { Prisma } from "../../../generated/prisma/client";
-import type {
-  GalleryInterface,
-  GalleryQueryOptions,
-  PaginatedGalleryResult,
-} from "../data_interfaces/GalleryInterface";
+import type { GalleryInterface } from "../data_interfaces/GalleryInterface";
 import type { GalleryInterfaceRepository } from "../interfaces/IGalleryRepositories";
 import { prisma } from "../../../config/database";
-import {
-  buildWhereClause,
-  buildOrderBy,
-  buildPaginationParams,
-  buildPaginationMeta,
-} from "../builders";
 
 export class GalleryRepositories implements GalleryInterfaceRepository {
   async createGallery(
@@ -24,33 +14,10 @@ export class GalleryRepositories implements GalleryInterfaceRepository {
     return prisma.gallery.findUnique({ where: { id } });
   }
 
-  async getAllGallery(
-    options?: GalleryQueryOptions,
-  ): Promise<PaginatedGalleryResult> {
-    const { page, limit, skip, take } = buildPaginationParams(
-      options?.page,
-      options?.limit,
-    );
-    const where = buildWhereClause(options);
-    const orderBy = buildOrderBy(options?.sort);
-
-    const [totalItems, items] = await prisma.$transaction([
-      prisma.gallery.count({ where }),
-      prisma.gallery.findMany({
-        where,
-        orderBy,
-        skip,
-        take,
-      }),
-    ]);
-
-    const pagination = buildPaginationMeta(totalItems, page, limit);
-
-    return {
-      items,
-      pagination,
-      gallery: items,
-    };
+  async getAllGallery(): Promise<GalleryInterface[]> {
+    return prisma.gallery.findMany({
+      orderBy: { date: "desc" },
+    });
   }
 
   async updateGallery(
@@ -63,5 +30,9 @@ export class GalleryRepositories implements GalleryInterfaceRepository {
   async deleteGallery(id: string): Promise<boolean> {
     const deleted = await prisma.gallery.delete({ where: { id } });
     return !!deleted;
+  }
+
+  async countGallery(where?: Prisma.GalleryWhereInput): Promise<number> {
+    return prisma.gallery.count({ where });
   }
 }

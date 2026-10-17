@@ -3,7 +3,6 @@ import { WartaRepositories } from "../repositories/WartaRepository";
 import { WartaServices } from "../services/WartaServices";
 import responses from "../../../utils/response";
 import { deleteUploadedFile } from "../../../utils/multer";
-import type { WartaQueryInput } from "../validator/WartaSchema";
 
 const wartaRepo = new WartaRepositories();
 const wartaService = new WartaServices(wartaRepo);
@@ -46,10 +45,8 @@ export const getAllWarta = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const query = (res.locals.validatedQuery ||
-      req.query) as unknown as WartaQueryInput;
-    const result = await wartaService.getAllWarta(query);
-    responses(res, 200, "Berhasil mengambil data semua warta", result);
+    const warta = await wartaService.getAllWarta();
+    responses(res, 200, "Berhasil mengambil data semua warta", { warta });
   } catch (error) {
     next(error);
   }

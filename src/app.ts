@@ -5,8 +5,15 @@ import { ConnectDatabase } from "./config/database";
 
 import path from "node:path";
 
-// all Routes
-import allRoutes from "./services";
+// Routes
+import authRoutes from "./services/authentication/routes/AuthRoutes";
+import userRoutes from "./services/user/routes/UserRoutes";
+import renunganRoutes from "./services/renungan/routes/RenunganRoutes";
+import jadwalRoutes from "./services/jadwal/routes/JadwalRoutes";
+import galleryRoutes from "./services/gallery/routes/GalleryRoutes";
+import organizationRoutes from "./services/organization/routes/OrganizationRoutes";
+import wartaRoutes from "./services/warta/routes/WartaRoutes";
+import dashboardRoutes from "./services/dashboard/routes/DashboardRoutes";
 
 // Middlewares
 import ErrorsHandler from "./middlewares/Errors";
@@ -18,11 +25,30 @@ async function main() {
   const app: Express = express();
 
   // ─── CORS ───────────────────────────────────────────────────────────────────
-  // origin: '*' dengan credentials: true DITOLAK browser secara default.
-  // Ganti dengan origin yang spesifik.
+  // Izinkan origin HTTP & HTTPS localhost untuk mendukung pengujian OAuth/Facebook SDK
+  const envOrigins = (process.env.CORS_ORIGIN || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "https://localhost:5173",
+    ...envOrigins,
+  ];
+
   app.use(
     cors({
-      origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (
+          allowedOrigins.includes(origin) ||
+          /^https?:\/\/localhost(:\d+)?$/.test(origin)
+        ) {
+          return callback(null, true);
+        }
+        return callback(new Error(`Origin ${origin} not allowed by CORS`));
+      },
       credentials: true,
     }),
   );
@@ -50,7 +76,28 @@ async function main() {
   });
 
   // ─── ROUTES ─────────────────────────────────────────────────────────────────
-  app.use("/api/soteria/v1/", allRoutes);
+  // Versioned API namespace used by frontends (/api/soteria/v1/*)
+  const soteriaV1 = express.Router();
+  soteriaV1.use("/auth", authRoutes);
+  soteriaV1.use("/dashboard", dashboardRoutes);
+  soteriaV1.use("/users", userRoutes);
+  soteriaV1.use("/renungan", renunganRoutes);
+  soteriaV1.use("/jadwal", jadwalRoutes);
+  soteriaV1.use("/gallery", galleryRoutes);
+  soteriaV1.use("/galeri", galleryRoutes);
+  soteriaV1.use("/organization", organizationRoutes);
+  soteriaV1.use("/warta", wartaRoutes);
+  app.use("/api/soteria/v1", soteriaV1);
+
+  // Standard API namespace (/api/*)
+  app.use("/api/auth", authRoutes);
+  app.use("/api/dashboard", dashboardRoutes);
+  app.use("/api/users", userRoutes);
+  app.use("/api/renungan", renunganRoutes);
+  app.use("/api/jadwal", jadwalRoutes);
+  app.use("/api/gallery", galleryRoutes);
+  app.use("/api/organization", organizationRoutes);
+  app.use("/api/warta", wartaRoutes);
 
   // ─── GLOBAL ERROR HANDLER ───────────────────────────────────────────────────
   // HARUS di-register SETELAH semua routes.
@@ -66,4 +113,4 @@ async function main() {
 main().catch((err) => {
   console.error("Fatal error:", err);
   process.exit(1);
-});
+});
