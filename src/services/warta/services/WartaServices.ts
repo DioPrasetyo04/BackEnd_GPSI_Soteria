@@ -28,7 +28,7 @@ export class WartaServices {
     }
 
     if (!data.fileUrl || typeof data.fileUrl !== "string" || data.fileUrl.trim().length === 0) {
-      throw new InvariantError("File dokumen warta (PDF/Doc) wajib diunggah");
+      throw new InvariantError("Berkas warta (PDF, Word, atau Gambar) wajib diunggah");
     }
 
     let slug = generateSlug(data.title);
@@ -66,21 +66,28 @@ export class WartaServices {
       }
     }
 
-    // Jika file baru diunggah, hapus file lama dari storage
+    // Update database terlebih dahulu
+    const updated = await this.wartaRepository.updateWarta(slug, payload);
+
+    // Jika database sukses diperbarui dan file baru diunggah, bersihkan file lama dari storage
     if (data.fileUrl && typeof data.fileUrl === "string" && data.fileUrl !== existing.fileUrl) {
       deleteUploadedFile(existing.fileUrl);
     }
 
-    return this.wartaRepository.updateWarta(slug, payload);
+    return updated;
   }
 
   async deleteWarta(slug: string): Promise<boolean> {
     const existing = await this.getWarta(slug);
 
-    if (existing.fileUrl) {
+    // Hapus dari database terlebih dahulu
+    const isDeleted = await this.wartaRepository.deleteWarta(slug);
+
+    // Jika sukses terhapus dari DB, bersihkan file fisik dari storage
+    if (isDeleted && existing.fileUrl) {
       deleteUploadedFile(existing.fileUrl);
     }
 
-    return this.wartaRepository.deleteWarta(slug);
+    return isDeleted;
   }
 }

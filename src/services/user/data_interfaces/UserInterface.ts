@@ -7,6 +7,8 @@ export interface UserInterface {
   email: string;
   password: string;
   role: roleUser;
+  roles?: roleUser[];
+  customPermissions?: string[];
   status: UserStatus;
   approvalToken?: string | null;
   lastNotificationSentAt?: Date | null;
@@ -21,6 +23,9 @@ export interface UserPublicInterface {
   name: string;
   email: string;
   role: roleUser;
+  roles: roleUser[];
+  customPermissions: string[];
+  permissions?: string[];
   status: UserStatus;
   createdAt: Date;
   updatedAt: Date;

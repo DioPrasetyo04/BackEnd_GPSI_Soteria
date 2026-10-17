@@ -9,6 +9,8 @@ export interface Auth {
   name?: string;
   email?: string;
   role?: string;
+  roles?: string[];
+  permissions?: string[];
   user?: UserPublicInterface;
 }
 

@@ -13,6 +13,8 @@ model User {
   email                  String     @unique
   password               String
   role                   roleUser   @default(PENGELOLA)
+  roles                  roleUser[] @default([PENGELOLA])
+  customPermissions      String[]   @default([]) @map("custom_permissions")
   status                 UserStatus @default(PENDING)
   approvalToken          String?    @unique @map("approval_token")
   lastNotificationSentAt DateTime?  @map("last_notification_sent_at")
@@ -24,6 +26,17 @@ model User {
 
   @@index([role])
   @@index([status])
+}
+
+model RolePermission {
+  id          String   @id @default(cuid())
+  role        roleUser @unique
+  permissions String[]
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("role_permissions")
 }
 
 model Renungan {

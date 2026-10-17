@@ -24,10 +24,30 @@ import { verifyFacebookAccessToken } from "../../../utils/facebookAuth";
 import { sendAdminApprovalNotification } from "../../../utils/mailer";
 import { nanoid } from "nanoid";
 
+import { RolePermissionRepository } from "../../permission/repositories/RolePermissionRepository";
+import { resolveEffectivePermissions } from "../../../types/Permissions";
+import type { Role } from "../../../types/Request";
+
+const rolePermRepo = new RolePermissionRepository();
+
 const toPublic = (user: UserInterface): UserPublicInterface => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { password, ...rest } = user;
-  return rest;
+  const userRole = (user.role || "PENGELOLA") as Role;
+  const rawRoles = Array.isArray(user.roles) ? user.roles : [];
+  const userRoles = Array.from(
+    new Set([userRole, ...rawRoles].filter(Boolean)),
+  ) as Role[];
+  const customPerms = Array.isArray(user.customPermissions)
+    ? user.customPermissions
+    : [];
+
+  return {
+    ...rest,
+    role: userRole as any,
+    roles: userRoles as any,
+    customPermissions: customPerms,
+  };
 };
 
 export class AuthServices {
@@ -35,6 +55,40 @@ export class AuthServices {
     private readonly authRepository: AuthInterfaceRepositories,
     private readonly userRepositories: UserInterfaceRepositories,
   ) {}
+
+  private async resolveUserAuthInfo(user: UserInterface) {
+    const userRole = ((user as any).role || "PENGELOLA") as Role;
+    const rawRoles = Array.isArray((user as any).roles)
+      ? (user as any).roles
+      : [];
+    const userRoles = Array.from(
+      new Set([userRole, ...rawRoles].filter(Boolean)),
+    ) as Role[];
+    const customPerms = Array.isArray((user as any).customPermissions)
+      ? (user as any).customPermissions
+      : [];
+
+    let permissions: string[] = [];
+    try {
+      const dynamicMap = await rolePermRepo.getAllRolePermissions();
+      permissions = resolveEffectivePermissions(
+        userRoles,
+        customPerms,
+        dynamicMap,
+      );
+    } catch {
+      permissions = resolveEffectivePermissions(userRoles, customPerms);
+    }
+
+    return {
+      name: user.name,
+      email: user.email,
+      role: userRole,
+      roles: userRoles,
+      permissions,
+      user: toPublic(user),
+    };
+  }
 
   async login(email: string, password: string): Promise<Auth> {
     const findUser = await this.userRepositories.getUserByEmail(email);
@@ -80,13 +134,12 @@ export class AuthServices {
       expiresAt,
     );
 
+    const authInfo = await this.resolveUserAuthInfo(findUser);
+
     return {
       ...authSession,
       refreshToken,
-      name: findUser.name,
-      email: findUser.email,
-      role: findUser.role,
-      user: toPublic(findUser),
+      ...authInfo,
     };
   }
 
@@ -106,6 +159,7 @@ export class AuthServices {
         email: googleUser.email,
         password: randomHashedPassword,
         role: "PENGELOLA",
+        roles: ["PENGELOLA"],
         status: "APPROVED",
       });
 
@@ -120,13 +174,12 @@ export class AuthServices {
       expiresAt,
     );
 
+    const authInfo = await this.resolveUserAuthInfo(user);
+
     return {
       ...authSession,
       refreshToken,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      user: toPublic(user),
+      ...authInfo,
     };
   }
 
@@ -146,6 +199,7 @@ export class AuthServices {
         email: fbUser.email,
         password: randomHashedPassword,
         role: "PENGELOLA",
+        roles: ["PENGELOLA"],
         status: "APPROVED",
       });
 
@@ -160,13 +214,12 @@ export class AuthServices {
       expiresAt,
     );
 
+    const authInfo = await this.resolveUserAuthInfo(user);
+
     return {
       ...authSession,
       refreshToken,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      user: toPublic(user),
+      ...authInfo,
     };
   }
 
@@ -236,13 +289,12 @@ export class AuthServices {
       newExpiresAt,
     );
 
+    const authInfo = await this.resolveUserAuthInfo(user);
+
     return {
       ...updatedSession,
       refreshToken: newRefreshToken,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      user: toPublic(user),
+      ...authInfo,
     };
   }
 
@@ -306,6 +358,7 @@ export class AuthServices {
       email: data.email,
       password: hashedPassword,
       role: assignedRole,
+      roles: [assignedRole],
       status: "PENDING",
       approvalToken,
       lastNotificationSentAt: now,

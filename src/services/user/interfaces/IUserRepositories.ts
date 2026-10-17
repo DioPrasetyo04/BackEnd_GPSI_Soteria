@@ -1,5 +1,9 @@
 import type { Prisma } from "../../../generated/prisma/client";
-import type { UserInterface } from "../data_interfaces/UserInterface";
+import type {
+  UserInterface,
+  UserQueryOptions,
+  UserQueryResult,
+} from "../data_interfaces/UserInterface";
 
 export interface UserInterfaceRepositories {
   createUser(data: Prisma.UserCreateInput): Promise<UserInterface>;
@@ -7,6 +11,7 @@ export interface UserInterfaceRepositories {
   getUserByEmail(email: string): Promise<UserInterface | null>;
   getUserByApprovalToken(token: string): Promise<UserInterface | null>;
   getAllUser(): Promise<UserInterface[]>;
+  getUsers(options?: UserQueryOptions): Promise<UserQueryResult>;
   updateUser(id: string, data: Prisma.UserUpdateInput): Promise<UserInterface>;
   deleteUser(id: string): Promise<boolean>;
   countUser(where?: Prisma.UserWhereInput): Promise<number>;

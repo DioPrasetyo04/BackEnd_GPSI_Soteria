@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import responses from "../utils/response";
+import { deleteUploadedFile } from "../utils/multer";
 
 /**
  * Middleware validasi request body menggunakan Zod schema.
@@ -19,6 +20,20 @@ export const validateRequest =
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
+        // Bersihkan berkas yang sudah terlanjur diunggah jika validasi payload gagal
+        if (req.file) {
+          deleteUploadedFile(req.file.path);
+        }
+        if (Array.isArray(req.files)) {
+          req.files.forEach((f) => deleteUploadedFile(f.path));
+        } else if (req.files && typeof req.files === "object") {
+          Object.values(req.files).forEach((group) => {
+            if (Array.isArray(group)) {
+              group.forEach((f) => deleteUploadedFile(f.path));
+            }
+          });
+        }
+
         const errorMessages = error.issues.map((issue) => issue.message);
 
         // `responses()` sudah memanggil res.json() di dalamnya

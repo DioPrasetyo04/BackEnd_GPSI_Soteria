@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import multer from "multer";
 import ClientError from "../exceptions/clientError";
 import responses from "../utils/response";
 
@@ -16,7 +17,8 @@ import responses from "../utils/response";
  *   → ErrorsHandler menangkap dan mengirim response yang sesuai
  */
 
-/** Tipe khusus untuk SyntaxError yang dilempar oleh body-parser */
+/** Tipe khusus untuk SyntaxError yang dilempar oleh 
+ * body-parser */
 interface BodyParserSyntaxError extends SyntaxError {
   status: number;
   body: unknown;
@@ -45,7 +47,29 @@ const ErrorsHandler = (
     return;
   }
 
-  // ── 2. Domain errors (ClientError dan turunannya) ────────────────────────
+  // ── 2. Multer upload errors (File size limit, field mismatch, etc.) ──────
+  if (err instanceof multer.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      responses(
+        res,
+        413,
+        "Ukuran file melebihi batas maksimal yang diizinkan (Dokumen maks 4 MB, Gambar maks 3 MB)",
+        {
+          code: err.code,
+          field: err.field,
+        },
+      );
+      return;
+    }
+
+    responses(res, 400, `Kesalahan saat mengunggah file: ${err.message}`, {
+      code: err.code,
+      field: err.field,
+    });
+    return;
+  }
+
+  // ── 3. Domain errors (ClientError dan turunannya) ────────────────────────
   // InvariantError (400), NotFoundError (404),
   // AuthenticationError (401), AuthorizationError (403)
   if (err instanceof ClientError) {
@@ -53,7 +77,7 @@ const ErrorsHandler = (
     return;
   }
 
-  // ── 3. Unhandled / unexpected errors → 500 ──────────────────────────────
+  // ── 4. Unhandled / unexpected errors → 500 ──────────────────────────────
   // Di production jangan ekspos detail error internal ke client.
   const isDev = process.env.NODE_ENV === "development";
   responses(

@@ -15,9 +15,17 @@ const passwordSchema = z
     message: "Password harus mengandung minimal 1 karakter spesial",
   });
 
+export const roleEnumSchema = z.enum([
+  "ADMIN",
+  "SUPER_ADMIN",
+  "PENGELOLA",
+  "KOORSEK",
+  "PHMJ",
+  "MAJELIS",
+]);
+
 /**
  * Schema untuk membuat user baru (POST).
- * Semua field wajib.
  */
 export const userCreateSchema = z.object({
   name: z
@@ -30,11 +38,13 @@ export const userCreateSchema = z.object({
     .min(1, { message: "Email wajib diisi" })
     .email({ message: "Format email tidak valid" }),
   password: passwordSchema,
+  role: roleEnumSchema.optional(),
+  roles: z.array(roleEnumSchema).optional(),
+  customPermissions: z.array(z.string()).optional(),
 });
 
 /**
  * Schema untuk update user (PUT).
- * Semua field opsional — user bisa update sebagian data saja.
  */
 export const userUpdateSchema = z.object({
   name: z
@@ -47,7 +57,11 @@ export const userUpdateSchema = z.object({
     .email({ message: "Format email tidak valid" })
     .optional(),
   password: passwordSchema.optional(),
+  role: roleEnumSchema.optional(),
+  roles: z.array(roleEnumSchema).optional(),
+  customPermissions: z.array(z.string()).optional(),
 });
 
 export type UserCreateInput = z.infer<typeof userCreateSchema>;
 export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
+

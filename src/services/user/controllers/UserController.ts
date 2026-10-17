@@ -2,6 +2,10 @@ import type { Request, Response, NextFunction } from "express";
 import { UserRepositories } from "../repositories/UserRpositories";
 import { UserServices } from "../services/UserServices";
 import responses from "../../../utils/response";
+import type {
+  UserQueryOptions,
+  UserSortOption,
+} from "../data_interfaces/UserInterface";
 
 /**
  * Controller adalah satu-satunya layer yang boleh memanggil `responses()`.
@@ -37,7 +41,7 @@ export const createUser = async (
 
 /**
  * GET /api/users
- * Ambil semua user
+ * Ambil semua user dengan filter query (search, sort, pagination)
  */
 export const getAllUsers = async (
   req: Request,
@@ -45,8 +49,16 @@ export const getAllUsers = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const users = await userServices.getAllUsers();
-    responses(res, 200, "Berhasil mengambil data semua user", { users });
+    const { q, sort, page, limit } = req.query;
+    const queryOptions: UserQueryOptions = {
+      q: typeof q === "string" ? q : undefined,
+      sort: typeof sort === "string" ? (sort as UserSortOption) : undefined,
+      page: page ? parseInt(String(page), 10) : undefined,
+      limit: limit ? parseInt(String(limit), 10) : undefined,
+    };
+
+    const result = await userServices.getAllUsers(queryOptions);
+    responses(res, 200, "Berhasil mengambil data semua user", result);
   } catch (error) {
     next(error);
   }

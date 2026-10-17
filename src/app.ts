@@ -7,7 +7,8 @@ import path from "node:path";
 
 // Routes
 import authRoutes from "./services/authentication/routes/AuthRoutes";
-import userRoutes from "./services/user/routes/UserRoutes";
+import indexUserRoutes from "./services/user/index";
+import rolePermissionRoutes from "./services/permission/routes/RolePermissionRoutes";
 import renunganRoutes from "./services/renungan/routes/RenunganRoutes";
 import jadwalRoutes from "./services/jadwal/routes/JadwalRoutes";
 import galleryRoutes from "./services/gallery/routes/GalleryRoutes";
@@ -80,7 +81,8 @@ async function main() {
   const soteriaV1 = express.Router();
   soteriaV1.use("/auth", authRoutes);
   soteriaV1.use("/dashboard", dashboardRoutes);
-  soteriaV1.use("/users", userRoutes);
+  soteriaV1.use("/users", indexUserRoutes);
+  soteriaV1.use("/roles-permissions", rolePermissionRoutes);
   soteriaV1.use("/renungan", renunganRoutes);
   soteriaV1.use("/jadwal", jadwalRoutes);
   soteriaV1.use("/gallery", galleryRoutes);
@@ -92,7 +94,8 @@ async function main() {
   // Standard API namespace (/api/*)
   app.use("/api/auth", authRoutes);
   app.use("/api/dashboard", dashboardRoutes);
-  app.use("/api/users", userRoutes);
+  app.use("/api/users", indexUserRoutes);
+  app.use("/api/roles-permissions", rolePermissionRoutes);
   app.use("/api/renungan", renunganRoutes);
   app.use("/api/jadwal", jadwalRoutes);
   app.use("/api/gallery", galleryRoutes);

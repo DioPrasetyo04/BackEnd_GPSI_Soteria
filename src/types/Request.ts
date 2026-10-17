@@ -13,6 +13,8 @@ export type UserPayload = {
   name: string;
   email: string;
   role: Role;
+  roles?: Role[];
+  permissions?: string[];
 };
 
 export interface CustomRequest extends Request {

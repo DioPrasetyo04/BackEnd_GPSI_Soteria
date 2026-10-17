@@ -1,7 +1,16 @@
 import type { Prisma } from "../../../generated/prisma/client";
-import type { UserInterface } from "../data_interfaces/UserInterface";
+import type {
+  UserInterface,
+  UserQueryOptions,
+  UserQueryResult,
+} from "../data_interfaces/UserInterface";
 import type { UserInterfaceRepositories } from "../interfaces/IUserRepositories";
 import { prisma } from "../../../config/database";
+import {
+  buildWhereClause,
+  buildOrderBy,
+  buildPaginationParams,
+} from "../builders";
 
 export class UserRepositories implements UserInterfaceRepositories {
   async createUser(data: Prisma.UserCreateInput): Promise<UserInterface> {
@@ -24,6 +33,24 @@ export class UserRepositories implements UserInterfaceRepositories {
     return prisma.user.findMany({
       orderBy: { createdAt: "desc" },
     });
+  }
+
+  async getUsers(options?: UserQueryOptions): Promise<UserQueryResult> {
+    const where = buildWhereClause(options);
+    const orderBy = buildOrderBy(options?.sort);
+    const { skip, take } = buildPaginationParams(options?.page, options?.limit);
+
+    const [items, totalItems] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    return { items, totalItems };
   }
 
   async updateUser(

@@ -9,7 +9,8 @@ const wartaService = new WartaServices(wartaRepo);
 
 const resolveFileUrl = (req: Request): string | undefined => {
   if (req.file) {
-    return `/public/files/${req.file.filename}`;
+    const relativePath = req.file.path.replace(/\\/g, "/");
+    return relativePath.startsWith("/") ? relativePath : `/${relativePath}`;
   }
   if (typeof req.body?.fileUrl === "string" && req.body.fileUrl.trim().length > 0) {
     return req.body.fileUrl;
@@ -33,7 +34,7 @@ export const createWarta = async (
     responses(res, 201, "Data warta jemaat berhasil dibuat", { warta });
   } catch (error) {
     if (req.file) {
-      deleteUploadedFile(`/public/files/${req.file.filename}`);
+      deleteUploadedFile(req.file.path);
     }
     next(error);
   }
@@ -88,7 +89,7 @@ export const updateWarta = async (
     responses(res, 200, "Data warta berhasil diperbarui", { warta });
   } catch (error) {
     if (req.file) {
-      deleteUploadedFile(`/public/files/${req.file.filename}`);
+      deleteUploadedFile(req.file.path);
     }
     next(error);
   }

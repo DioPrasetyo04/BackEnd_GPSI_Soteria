@@ -126,10 +126,21 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   password: 'password',
   role: 'role',
+  roles: 'roles',
+  customPermissions: 'customPermissions',
   status: 'status',
   approvalToken: 'approvalToken',
   lastNotificationSentAt: 'lastNotificationSentAt',
   rejectionReason: 'rejectionReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RolePermissionScalarFieldEnum = {
+  id: 'id',
+  role: 'role',
+  permissions: 'permissions',
+  description: 'description',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -242,6 +253,7 @@ exports.OrganizationCategory = exports.$Enums.OrganizationCategory = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  RolePermission: 'RolePermission',
   Renungan: 'Renungan',
   Jadwal: 'Jadwal',
   Gallery: 'Gallery',
