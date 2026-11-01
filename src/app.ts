@@ -60,34 +60,17 @@ app.use("/public", express.static(path.join(process.cwd(), "public")));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// ─── DATABASE ───────────────────────────────────────────────────────────────
-// Lazy-connect: dipanggil sekali, hasilnya di-cache untuk request berikutnya
-let dbConnected = false;
-async function ensureDbConnected() {
-  if (!dbConnected) {
-    await ConnectDatabase();
-    dbConnected = true;
-  }
-}
-
-// Middleware: pastikan DB sudah terkoneksi sebelum request diproses
-app.use(async (_req, _res, next) => {
-  try {
-    await ensureDbConnected();
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
-
 // ─── HEALTH CHECK ───────────────────────────────────────────────────────────
-app.get("/", (req: Request, res: Response) => {
+const healthCheck = (_req: Request, res: Response) => {
   res.json({
     message: "Welcome to GPSI Soteria API",
     version: "1.0.0",
     status: "running",
   });
-});
+};
+
+app.get("/", healthCheck);
+app.get("/api", healthCheck);
 
 // ─── ROUTES ─────────────────────────────────────────────────────────────────
 // Versioned API namespace used by frontends (/api/soteria/v1/*)
@@ -128,7 +111,11 @@ if (process.env.VERCEL !== "1") {
   const HOST = String(process.env.HOST || "localhost");
   const PORT = parseInt(process.env.PORT || "3000", 10);
 
-  app.listen(PORT, HOST, () => {
-    console.log(`🚀 Server is running on http://${HOST}:${PORT}`);
-  });
+  ConnectDatabase()
+    .catch((err) => console.error("Initial DB connection failed:", err))
+    .finally(() => {
+      app.listen(PORT, HOST, () => {
+        console.log(`🚀 Server is running on http://${HOST}:${PORT}`);
+      });
+    });
 }
