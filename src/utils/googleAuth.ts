@@ -23,7 +23,11 @@ export const verifyGoogleIdToken = async (
       process.env.GOOGLE_TOKEN_INFO_URL ??
       "https://oauth2.googleapis.com/tokeninfo";
     const url = `${baseUrl}?id_token=${encodeURIComponent(idToken.trim())}`;
-    const response = await fetch(url);
+    const response = (await fetch(url)) as unknown as {
+      ok: boolean;
+      status: number;
+      json(): Promise<unknown>;
+    };
 
 
     if (!response.ok) {

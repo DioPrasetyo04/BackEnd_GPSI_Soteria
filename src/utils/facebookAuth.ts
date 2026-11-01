@@ -27,7 +27,11 @@ export const verifyFacebookAccessToken = async (
       process.env.FACEBOOK_GRAPH_URL ?? "https://graph.facebook.com/v19.0/me";
 
     const url = `${baseUrl}?fields=id,name,email,picture.type(large)&access_token=${encodeURIComponent(accessToken.trim())}`;
-    const response = await fetch(url);
+    const response = (await fetch(url)) as unknown as {
+      ok: boolean;
+      status: number;
+      json(): Promise<unknown>;
+    };
 
     const payload = (await response.json()) as {
       id?: string;
