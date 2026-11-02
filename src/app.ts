@@ -40,11 +40,12 @@ app.use(
       if (!origin) return callback(null, true);
       if (
         allowedOrigins.includes(origin) ||
-        /^https?:\/\/localhost(:\d+)?$/.test(origin)
+        /^https?:\/\/localhost(:\d+)?$/.test(origin) ||
+        /\.vercel\.app$/.test(origin)
       ) {
         return callback(null, true);
       }
-      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+      return callback(null, false);
     },
     credentials: true,
   }),
