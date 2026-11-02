@@ -2,7 +2,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
-// Global cache for Prisma instance across serverless warm invocations
+// Global cache singleton Prisma agar koneksi tidak exhaust di serverless
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
@@ -15,7 +15,7 @@ function getPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     throw new Error(
-      "DATABASE_URL is not defined in environment variables. Please configure it in your Vercel Project Settings.",
+      "DATABASE_URL is not defined in environment variables. Pastikan sudah mengisi DATABASE_URL di Vercel Project Settings.",
     );
   }
 
@@ -29,7 +29,7 @@ function getPrismaClient(): PrismaClient {
   return client;
 }
 
-// Lazy Proxy: prevents startup crash if DATABASE_URL is missing or cold-starting
+// Lazy Proxy: mencegah serverless function crash saat startup / health check
 const prisma = new Proxy({} as PrismaClient, {
   get(_target, prop) {
     const client = getPrismaClient();
