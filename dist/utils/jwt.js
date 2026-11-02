@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodeJwtToken = exports.verifyRefreshToken = exports.verifyJwtToken = exports.generateAuthTokens = exports.generateRefreshToken = exports.generateToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const helpers_1 = require("./helpers");
-const nanoid_1 = require("nanoid");
+const nanoid_1 = require("./nanoid");
 const getAccessTokenSecret = () => (process.env.JWT_SECRET_KEY ?? "secret");
 const getRefreshTokenSecret = () => (process.env.JWT_REFRESH_SECRET_KEY ??
     `${process.env.JWT_SECRET_KEY ?? "secret"}_refresh`);

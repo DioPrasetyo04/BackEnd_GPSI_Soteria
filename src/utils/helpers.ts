@@ -1,4 +1,4 @@
-import { nanoid } from "nanoid";
+import { nanoid } from "./nanoid";
 
 const isValidEmail = (email: string): boolean => {
   const emailTrim = email.trim();

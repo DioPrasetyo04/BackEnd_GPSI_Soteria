@@ -22,7 +22,7 @@ import {
 import { verifyGoogleIdToken } from "../../../utils/googleAuth";
 import { verifyFacebookAccessToken } from "../../../utils/facebookAuth";
 import { sendAdminApprovalNotification } from "../../../utils/mailer";
-import { nanoid } from "nanoid";
+import { nanoid } from "../../../utils/nanoid";
 
 import { RolePermissionRepository } from "../../permission/repositories/RolePermissionRepository";
 import { resolveEffectivePermissions } from "../../../types/Permissions";

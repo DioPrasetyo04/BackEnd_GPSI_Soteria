@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.expiresInMs = exports.generateSlug = exports.isValidEmail = void 0;
-const nanoid_1 = require("nanoid");
+const nanoid_1 = require("./nanoid");
 const isValidEmail = (email) => {
     const emailTrim = email.trim();
     const emailLowerCase = emailTrim.toLowerCase();

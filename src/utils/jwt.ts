@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { expiresInMs } from "./helpers";
-import { nanoid } from "nanoid";
+import { nanoid } from "./nanoid";
 
 export interface JWTPayload {
   data?: {
