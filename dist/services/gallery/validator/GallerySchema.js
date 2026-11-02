@@ -52,6 +52,7 @@ exports.galleryCreateSchema = zod_1.z.object({
         .union([zod_1.z.boolean(), zod_1.z.string()])
         .optional()
         .transform((val) => parseBoolean(val, false)),
+    image: zod_1.z.string().optional(),
 });
 /**
  * Schema untuk update galeri (PUT /api/gallery/:id).
@@ -84,5 +85,6 @@ exports.galleryUpdateSchema = zod_1.z.object({
         .union([zod_1.z.boolean(), zod_1.z.string()])
         .optional()
         .transform((val) => (val !== undefined ? parseBoolean(val) : undefined)),
+    image: zod_1.z.string().optional(),
 });
 //# sourceMappingURL=GallerySchema.js.map

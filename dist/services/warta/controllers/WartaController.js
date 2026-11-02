@@ -7,22 +7,22 @@ exports.deleteWarta = exports.updateWarta = exports.getWartaBySlug = exports.get
 const WartaRepository_1 = require("../repositories/WartaRepository");
 const WartaServices_1 = require("../services/WartaServices");
 const response_1 = __importDefault(require("../../../utils/response"));
-const multer_1 = require("../../../utils/multer");
+const cloudStorage_1 = require("../../../utils/cloudStorage");
 const wartaRepo = new WartaRepository_1.WartaRepositories();
 const wartaService = new WartaServices_1.WartaServices(wartaRepo);
-const resolveFileUrl = (req) => {
-    if (req.file) {
-        const relativePath = req.file.path.replace(/\\/g, "/");
-        return relativePath.startsWith("/") ? relativePath : `/${relativePath}`;
-    }
-    if (typeof req.body?.fileUrl === "string" && req.body.fileUrl.trim().length > 0) {
-        return req.body.fileUrl;
-    }
-    return undefined;
-};
 const createWarta = async (req, res, next) => {
     try {
-        const fileUrl = resolveFileUrl(req);
+        let fileUrl;
+        if (req.file) {
+            fileUrl = await (0, cloudStorage_1.uploadToStorage)(req.file, {
+                bucket: "warta",
+                folder: "files",
+            });
+        }
+        else if (typeof req.body?.fileUrl === "string" &&
+            req.body.fileUrl.trim().length > 0) {
+            fileUrl = req.body.fileUrl;
+        }
         const warta = await wartaService.createWarta({
             ...req.body,
             fileUrl: fileUrl || "",
@@ -30,9 +30,6 @@ const createWarta = async (req, res, next) => {
         (0, response_1.default)(res, 201, "Data warta jemaat berhasil dibuat", { warta });
     }
     catch (error) {
-        if (req.file) {
-            (0, multer_1.deleteUploadedFile)(req.file.path);
-        }
         next(error);
     }
 };
@@ -61,7 +58,17 @@ exports.getWartaBySlug = getWartaBySlug;
 const updateWarta = async (req, res, next) => {
     try {
         const { slug } = req.params;
-        const newFileUrl = resolveFileUrl(req);
+        let newFileUrl;
+        if (req.file) {
+            newFileUrl = await (0, cloudStorage_1.uploadToStorage)(req.file, {
+                bucket: "warta",
+                folder: "files",
+            });
+        }
+        else if (typeof req.body?.fileUrl === "string" &&
+            req.body.fileUrl.trim().length > 0) {
+            newFileUrl = req.body.fileUrl;
+        }
         const updatePayload = {
             ...req.body,
             ...(newFileUrl ? { fileUrl: newFileUrl } : {}),
@@ -70,9 +77,6 @@ const updateWarta = async (req, res, next) => {
         (0, response_1.default)(res, 200, "Data warta berhasil diperbarui", { warta });
     }
     catch (error) {
-        if (req.file) {
-            (0, multer_1.deleteUploadedFile)(req.file.path);
-        }
         next(error);
     }
 };

@@ -19,6 +19,7 @@ exports.wartaCreateSchema = zod_1.z.object({
         .string()
         .optional()
         .transform((val) => (val ? new Date(val) : new Date())),
+    fileUrl: zod_1.z.string().optional(),
 });
 /**
  * Schema untuk update warta (PUT /api/warta/:slug).
@@ -30,5 +31,6 @@ exports.wartaUpdateSchema = zod_1.z.object({
         .string()
         .optional()
         .transform((val) => (val ? new Date(val) : undefined)),
+    fileUrl: zod_1.z.string().optional(),
 });
 //# sourceMappingURL=WartaSchema.js.map

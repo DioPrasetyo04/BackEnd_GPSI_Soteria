@@ -17,6 +17,7 @@ export const wartaCreateSchema = z.object({
     .string()
     .optional()
     .transform((val) => (val ? new Date(val) : new Date())),
+  fileUrl: z.string().optional(),
 });
 
 /**
@@ -29,6 +30,7 @@ export const wartaUpdateSchema = z.object({
     .string()
     .optional()
     .transform((val) => (val ? new Date(val) : undefined)),
+  fileUrl: z.string().optional(),
 });
 
 export type WartaCreateInput = z.infer<typeof wartaCreateSchema>;

@@ -13,6 +13,8 @@ export interface UserInterface {
   approvalToken?: string | null;
   lastNotificationSentAt?: Date | null;
   rejectionReason?: string | null;
+  resetPasswordToken?: string | null;
+  resetPasswordExpires?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

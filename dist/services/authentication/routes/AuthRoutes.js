@@ -33,5 +33,8 @@ authRoutes.post("/resend-approval", (0, ValidateRequest_1.validateRequest)(Authe
 authRoutes.get("/verify-approval-info", AuthenticationController_1.getApprovalInfo);
 authRoutes.post("/process-approval", (0, ValidateRequest_1.validateRequest)(AuthenticationValidator_1.processApprovalSchema), AuthenticationController_1.processApproval);
 authRoutes.post("/logout", VerifyToken_1.verifyToken, AuthenticationController_1.logout);
+authRoutes.post("/forgot-password", (0, ValidateRequest_1.validateRequest)(AuthenticationValidator_1.forgotPasswordSchema), AuthenticationController_1.forgotPassword);
+authRoutes.get("/verify-reset-token", AuthenticationController_1.verifyResetPasswordToken);
+authRoutes.post("/reset-password", (0, ValidateRequest_1.validateRequest)(AuthenticationValidator_1.resetPasswordSchema), AuthenticationController_1.resetPassword);
 exports.default = authRoutes;
 //# sourceMappingURL=AuthRoutes.js.map

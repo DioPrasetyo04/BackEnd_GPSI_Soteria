@@ -3,11 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUploadedFile = exports.allowedFileTypesFile = exports.allowedFileTypesVideo = exports.allowedFileTypesPhoto = exports.uploadDynamicfile = exports.validateWartaFileSize = exports.uploadWartaFile = exports.MAX_WARTA_IMAGE_SIZE = exports.MAX_WARTA_DOC_SIZE = void 0;
+exports.allowedFileTypesFile = exports.allowedFileTypesVideo = exports.allowedFileTypesPhoto = exports.deleteUploadedFile = exports.validateWartaFileSize = exports.uploadWartaFile = exports.uploadDynamicfile = exports.MAX_WARTA_IMAGE_SIZE = exports.MAX_WARTA_DOC_SIZE = void 0;
 const multer_1 = __importDefault(require("multer"));
 const node_path_1 = __importDefault(require("node:path"));
-const node_fs_1 = __importDefault(require("node:fs"));
 const exceptions_1 = require("../exceptions");
+const cloudStorage_1 = require("./cloudStorage");
 const allowedFileTypesPhoto = ["png", "jpg", "jpeg", "webp", "gif"];
 exports.allowedFileTypesPhoto = allowedFileTypesPhoto;
 const allowedFileTypesVideo = ["mp4", "mkv", "avi", "mov", "wmv", "flv", "webm"];
@@ -39,48 +39,12 @@ const getFileExt = (file) => {
         return ext;
     return file.mimetype.split("/")[1] ?? "";
 };
-const dynamicStorage = () => {
-    return multer_1.default.diskStorage({
-        destination: (req, file, cb) => {
-            const typeExt = getFileExt(file);
-            let uploadPath;
-            if ((file.fieldname === "images" || file.fieldname === "image") &&
-                allowedFileTypesPhoto.includes(typeExt)) {
-                uploadPath = node_path_1.default.join("public", "images");
-            }
-            else if ((file.fieldname === "fileUrl" || file.fieldname === "file") &&
-                allowedFileTypesFile.includes(typeExt)) {
-                uploadPath = node_path_1.default.join("public", "files");
-            }
-            else if ((file.fieldname === "video" || file.fieldname === "videos") &&
-                allowedFileTypesVideo.includes(typeExt)) {
-                uploadPath = node_path_1.default.join("public", "videos");
-            }
-            else {
-                return cb(new exceptions_1.InvariantError(`Tipe file tidak diizinkan untuk field "${file.fieldname}". ` +
-                    `Tipe diterima: foto (${allowedFileTypesPhoto.join(",")}), ` +
-                    `file (${allowedFileTypesFile.join(",")}), ` +
-                    `video (${allowedFileTypesVideo.join(",")})`), "");
-            }
-            if (!node_fs_1.default.existsSync(uploadPath)) {
-                node_fs_1.default.mkdirSync(uploadPath, { recursive: true });
-            }
-            cb(null, uploadPath);
-        },
-        filename: (req, file, cb) => {
-            const ext = node_path_1.default.extname(file.originalname).toLowerCase();
-            const date = new Date();
-            const formattedDate = [
-                date.getFullYear(),
-                String(date.getMonth() + 1).padStart(2, "0"),
-                String(date.getDate()).padStart(2, "0"),
-            ].join("-");
-            const uniqueSuffix = `${formattedDate}-${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-            const fileName = `${uniqueSuffix}-${file.fieldname}${ext}`;
-            cb(null, fileName);
-        },
-    });
-};
+/**
+ * Multer in-memory storage:
+ * Menghindari error EROFS (Read-only file system) di Vercel / serverless environment
+ * karena berkas disimpan sementara di memori sebagai Buffer.
+ */
+const memoryStorage = multer_1.default.memoryStorage();
 /**
  * File filter umum — hanya izinkan tipe yang sesuai per field.
  */
@@ -102,42 +66,11 @@ const fileFilter = (req, file, cb) => {
         cb(null, true);
     }
 };
-const uploadDynamicfile = (0, multer_1.default)({
-    storage: dynamicStorage(),
+exports.uploadDynamicfile = (0, multer_1.default)({
+    storage: memoryStorage,
     fileFilter,
     limits: {
         fileSize: 10 * 1024 * 1024, // 10 MB max
-    },
-});
-exports.uploadDynamicfile = uploadDynamicfile;
-/**
- * Storage khusus untuk berkas Warta Jemaat (Dokumen atau Gambar)
- */
-const wartaStorage = multer_1.default.diskStorage({
-    destination: (req, file, cb) => {
-        const ext = node_path_1.default.extname(file.originalname).toLowerCase();
-        const isImage = file.mimetype.startsWith("image/") ||
-            WARTA_IMAGE_EXTS.includes(ext) ||
-            WARTA_IMAGE_MIMES.includes(file.mimetype);
-        const uploadPath = isImage
-            ? node_path_1.default.join("public", "images")
-            : node_path_1.default.join("public", "files");
-        if (!node_fs_1.default.existsSync(uploadPath)) {
-            node_fs_1.default.mkdirSync(uploadPath, { recursive: true });
-        }
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        const ext = node_path_1.default.extname(file.originalname).toLowerCase();
-        const date = new Date();
-        const formattedDate = [
-            date.getFullYear(),
-            String(date.getMonth() + 1).padStart(2, "0"),
-            String(date.getDate()).padStart(2, "0"),
-        ].join("-");
-        const uniqueSuffix = `${formattedDate}-${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-        const fileName = `${uniqueSuffix}-warta${ext}`;
-        cb(null, fileName);
     },
 });
 /**
@@ -157,11 +90,10 @@ const wartaFileFilter = (req, file, cb) => {
     cb(null, true);
 };
 /**
- * Multer instance khusus untuk Warta Jemaat.
- * Batas tertinggi Multer adalah 4 MB (mengakomodasi batas dokumen 4 MB).
+ * Multer instance khusus untuk Warta Jemaat (In-Memory).
  */
 exports.uploadWartaFile = (0, multer_1.default)({
-    storage: wartaStorage,
+    storage: memoryStorage,
     fileFilter: wartaFileFilter,
     limits: {
         fileSize: exports.MAX_WARTA_DOC_SIZE, // 4 MB
@@ -171,7 +103,6 @@ exports.uploadWartaFile = (0, multer_1.default)({
  * Middleware validasi ukuran file Warta:
  * - Gambar maksimal 3 MB
  * - Dokumen maksimal 4 MB
- * Jika melebihi batas, file fisik yang sudah di-upload langsung dihapus untuk mencegah penumpukan di server.
  */
 const validateWartaFileSize = (req, res, next) => {
     if (!req.file) {
@@ -182,33 +113,23 @@ const validateWartaFileSize = (req, res, next) => {
         WARTA_IMAGE_MIMES.includes(req.file.mimetype) ||
         WARTA_IMAGE_EXTS.includes(ext);
     if (isImage && req.file.size > exports.MAX_WARTA_IMAGE_SIZE) {
-        deleteUploadedFile(req.file.path);
         throw new exceptions_1.InvariantError(`Ukuran file gambar melebihi batas maksimal 3 MB (Ukuran: ${(req.file.size / (1024 * 1024)).toFixed(2)} MB)`);
     }
     if (!isImage && req.file.size > exports.MAX_WARTA_DOC_SIZE) {
-        deleteUploadedFile(req.file.path);
         throw new exceptions_1.InvariantError(`Ukuran file dokumen melebihi batas maksimal 4 MB (Ukuran: ${(req.file.size / (1024 * 1024)).toFixed(2)} MB)`);
     }
     next();
 };
 exports.validateWartaFileSize = validateWartaFileSize;
 /**
- * Menghapus file fisik dari server secara aman.
+ * Helper kompatibel untuk menghapus file fisik / storage secara aman.
  */
 const deleteUploadedFile = (filePath) => {
     if (!filePath || typeof filePath !== "string")
         return;
-    // Normalisasi leading slash atau backslash (contoh: "/public/files/xxx" -> "public/files/xxx")
-    const cleanPath = filePath.replace(/^[/\\]+/, "");
-    const fullPath = node_path_1.default.resolve(process.cwd(), cleanPath);
-    if (node_fs_1.default.existsSync(fullPath)) {
-        try {
-            node_fs_1.default.unlinkSync(fullPath);
-        }
-        catch (error) {
-            console.error(`Gagal menghapus file di storage: ${fullPath}`, error);
-        }
-    }
+    (0, cloudStorage_1.deleteFromStorage)(filePath, "warta").catch((err) => {
+        console.error("Gagal menghapus berkas:", err);
+    });
 };
 exports.deleteUploadedFile = deleteUploadedFile;
 //# sourceMappingURL=multer.js.map

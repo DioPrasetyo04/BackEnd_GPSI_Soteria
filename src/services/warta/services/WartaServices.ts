@@ -3,7 +3,7 @@ import type { WartaInterfaceRepository } from "../interfaces/IWartaRepositories"
 import type { Prisma } from "../../../generated/prisma/client";
 import { InvariantError, NotFoundError } from "../../../exceptions";
 import { generateSlug } from "../../../utils/helpers";
-import { deleteUploadedFile } from "../../../utils/multer";
+import { deleteFromStorage } from "../../../utils/cloudStorage";
 
 export class WartaServices {
   constructor(
@@ -71,7 +71,9 @@ export class WartaServices {
 
     // Jika database sukses diperbarui dan file baru diunggah, bersihkan file lama dari storage
     if (data.fileUrl && typeof data.fileUrl === "string" && data.fileUrl !== existing.fileUrl) {
-      deleteUploadedFile(existing.fileUrl);
+      deleteFromStorage(existing.fileUrl, "warta").catch((err) =>
+        console.error("Gagal membersihkan berkas warta lama:", err)
+      );
     }
 
     return updated;
@@ -85,7 +87,9 @@ export class WartaServices {
 
     // Jika sukses terhapus dari DB, bersihkan file fisik dari storage
     if (isDeleted && existing.fileUrl) {
-      deleteUploadedFile(existing.fileUrl);
+      deleteFromStorage(existing.fileUrl, "warta").catch((err) =>
+        console.error("Gagal menghapus berkas warta terhapus:", err)
+      );
     }
 
     return isDeleted;

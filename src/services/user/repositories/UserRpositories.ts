@@ -29,6 +29,14 @@ export class UserRepositories implements UserInterfaceRepositories {
     return prisma.user.findUnique({ where: { approvalToken: token } });
   }
 
+  async getUserByResetPasswordToken(
+    token: string,
+  ): Promise<UserInterface | null> {
+    return (prisma.user as any).findFirst({
+      where: { resetPasswordToken: token },
+    });
+  }
+
   async getAllUser(): Promise<UserInterface[]> {
     return prisma.user.findMany({
       orderBy: { createdAt: "desc" },

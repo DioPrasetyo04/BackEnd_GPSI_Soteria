@@ -88,6 +88,9 @@ soteriaV1.use("/organization", organizationRoutes);
 soteriaV1.use("/warta", wartaRoutes);
 app.use("/api/soteria/v1", soteriaV1);
 
+// Direct fallback namespace (/auth/*)
+app.use("/auth", authRoutes);
+
 // Standard API namespace (/api/*)
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);

@@ -49,6 +49,7 @@ export const galleryCreateSchema = z.object({
     .union([z.boolean(), z.string()])
     .optional()
     .transform((val) => parseBoolean(val, false)),
+  image: z.string().optional(),
 });
 
 /**
@@ -81,6 +82,7 @@ export const galleryUpdateSchema = z.object({
     .union([z.boolean(), z.string()])
     .optional()
     .transform((val) => (val !== undefined ? parseBoolean(val) : undefined)),
+  image: z.string().optional(),
 });
 
 export type GalleryCreateInput = z.infer<typeof galleryCreateSchema>;

@@ -13,8 +13,6 @@ const ErrorsHandler = (err, req, res,
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 next) => {
     // ── 1. Body-parser JSON syntax error ────────────────────────────────────
-    // Terjadi ketika request body bukan JSON valid.
-    // Contoh: single quotes, key tanpa tanda kutip, trailing comma, dll.
     if (isBodyParserError(err)) {
         (0, response_1.default)(res, 400, "Format JSON tidak valid pada request body", {
             hint: "Pastikan Content-Type: application/json dan body menggunakan double-quote (\").",
@@ -38,16 +36,14 @@ next) => {
         return;
     }
     // ── 3. Domain errors (ClientError dan turunannya) ────────────────────────
-    // InvariantError (400), NotFoundError (404),
-    // AuthenticationError (401), AuthorizationError (403)
     if (err instanceof clientError_1.default) {
         (0, response_1.default)(res, err.statusCode, err.message, null);
         return;
     }
     // ── 4. Unhandled / unexpected errors → 500 ──────────────────────────────
-    // Di production jangan ekspos detail error internal ke client.
+    console.error("Unhandled error caught in ErrorsHandler:", err);
     const isDev = process.env.NODE_ENV === "development";
-    (0, response_1.default)(res, 500, "Internal Server Error", isDev ? { detail: err.message } : null);
+    (0, response_1.default)(res, 500, "Internal Server Error", isDev ? { detail: err.message, stack: err.stack } : { message: err.message });
 };
 exports.default = ErrorsHandler;
 //# sourceMappingURL=Errors.js.map

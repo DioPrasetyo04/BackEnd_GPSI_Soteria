@@ -33,7 +33,8 @@ export const renunganCreateSchema = z.object({
     .string()
     .optional()
     .transform((val) => (val ? new Date(val) : new Date())),
-}).strict();
+  image: z.string().optional(),
+});
 
 /**
  * Schema untuk update renungan (PUT /api/renungan/:slug).
@@ -66,7 +67,8 @@ export const renunganUpdateSchema = z.object({
     .string()
     .optional()
     .transform((val) => (val ? new Date(val) : undefined)),
-}).strict();
+  image: z.string().optional(),
+});
 
 export type RenunganCreateInput = z.infer<typeof renunganCreateSchema>;
 export type RenunganUpdateInput = z.infer<typeof renunganUpdateSchema>;

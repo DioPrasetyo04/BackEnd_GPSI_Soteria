@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 export const authSchema = z
@@ -64,5 +63,33 @@ export const processApprovalSchema = z
   })
   .strict();
 
+export const forgotPasswordSchema = z
+  .object({
+    email: z.string().email({ message: "Format email tidak valid" }),
+  })
+  .strict();
 
+export const verifyResetTokenSchema = z
+  .object({
+    token: z.string().min(1, { message: "Token reset password wajib disertakan" }),
+  })
+  .strict();
 
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1, { message: "Token reset password wajib disertakan" }),
+    newPassword: z
+      .string()
+      .min(8, { message: "Kata sandi baru minimal 8 karakter" })
+      .regex(/[A-Z]/, {
+        message: "Kata sandi harus mengandung minimal 1 huruf besar",
+      })
+      .regex(/[a-z]/, {
+        message: "Kata sandi harus mengandung minimal 1 huruf kecil",
+      })
+      .regex(/[0-9]/, { message: "Kata sandi harus mengandung minimal 1 angka" })
+      .regex(/[^A-Za-z0-9]/, {
+        message: "Kata sandi harus mengandung minimal 1 karakter spesial",
+      }),
+  })
+  .strict();

@@ -6,6 +6,9 @@ import {
   refreshTokenSchema,
   resendApprovalSchema,
   processApprovalSchema,
+  forgotPasswordSchema,
+  verifyResetTokenSchema,
+  resetPasswordSchema,
 } from "../validator/AuthenticationValidator";
 
 import { AuthRepositories } from "../repositories/AuthRepositories";
@@ -206,6 +209,52 @@ export const logout = async (
 
     await authServices.logout(identifier);
     responses(res, 200, "Logout berhasil", null);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const parsedData = forgotPasswordSchema.parse(req.body);
+    const result = await authServices.forgotPassword(parsedData.email);
+    responses(res, 200, result.message, result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyResetPasswordToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const token = String(req.query.token || req.body?.token || "");
+    const parsed = verifyResetTokenSchema.parse({ token });
+    const result = await authServices.verifyResetToken(parsed.token);
+    responses(res, 200, "Token valid", result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const parsed = resetPasswordSchema.parse(req.body);
+    const result = await authServices.resetPassword(
+      parsed.token,
+      parsed.newPassword,
+    );
+    responses(res, 200, result.message, result);
   } catch (error) {
     next(error);
   }

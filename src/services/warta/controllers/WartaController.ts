@@ -2,21 +2,10 @@ import type { Request, Response, NextFunction } from "express";
 import { WartaRepositories } from "../repositories/WartaRepository";
 import { WartaServices } from "../services/WartaServices";
 import responses from "../../../utils/response";
-import { deleteUploadedFile } from "../../../utils/multer";
+import { uploadToStorage, deleteFromStorage } from "../../../utils/cloudStorage";
 
 const wartaRepo = new WartaRepositories();
 const wartaService = new WartaServices(wartaRepo);
-
-const resolveFileUrl = (req: Request): string | undefined => {
-  if (req.file) {
-    const relativePath = req.file.path.replace(/\\/g, "/");
-    return relativePath.startsWith("/") ? relativePath : `/${relativePath}`;
-  }
-  if (typeof req.body?.fileUrl === "string" && req.body.fileUrl.trim().length > 0) {
-    return req.body.fileUrl;
-  }
-  return undefined;
-};
 
 export const createWarta = async (
   req: Request,
@@ -24,7 +13,19 @@ export const createWarta = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const fileUrl = resolveFileUrl(req);
+    let fileUrl: string | undefined;
+
+    if (req.file) {
+      fileUrl = await uploadToStorage(req.file, {
+        bucket: "warta",
+        folder: "files",
+      });
+    } else if (
+      typeof req.body?.fileUrl === "string" &&
+      req.body.fileUrl.trim().length > 0
+    ) {
+      fileUrl = req.body.fileUrl;
+    }
 
     const warta = await wartaService.createWarta({
       ...req.body,
@@ -33,9 +34,6 @@ export const createWarta = async (
 
     responses(res, 201, "Data warta jemaat berhasil dibuat", { warta });
   } catch (error) {
-    if (req.file) {
-      deleteUploadedFile(req.file.path);
-    }
     next(error);
   }
 };
@@ -74,7 +72,19 @@ export const updateWarta = async (
 ): Promise<void> => {
   try {
     const { slug } = req.params;
-    const newFileUrl = resolveFileUrl(req);
+    let newFileUrl: string | undefined;
+
+    if (req.file) {
+      newFileUrl = await uploadToStorage(req.file, {
+        bucket: "warta",
+        folder: "files",
+      });
+    } else if (
+      typeof req.body?.fileUrl === "string" &&
+      req.body.fileUrl.trim().length > 0
+    ) {
+      newFileUrl = req.body.fileUrl;
+    }
 
     const updatePayload = {
       ...req.body,
@@ -88,9 +98,6 @@ export const updateWarta = async (
 
     responses(res, 200, "Data warta berhasil diperbarui", { warta });
   } catch (error) {
-    if (req.file) {
-      deleteUploadedFile(req.file.path);
-    }
     next(error);
   }
 };

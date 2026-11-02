@@ -19,6 +19,8 @@ model User {
   approvalToken          String?     @unique @map("approval_token")
   lastNotificationSentAt DateTime?   @map("last_notification_sent_at")
   rejectionReason        String?     @map("rejection_reason")
+  resetPasswordToken     String?     @unique @map("reset_password_token")
+  resetPasswordExpires   DateTime?   @map("reset_password_expires")
   createdAt              DateTime    @default(now()) @map("created_at")
   updatedAt              DateTime    @updatedAt @map("updated_at")
 

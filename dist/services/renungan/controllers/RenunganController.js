@@ -7,30 +7,22 @@ exports.deleteRenungan = exports.updateRenungan = exports.getRenunganBySlug = ex
 const RenunganRepository_1 = require("../repositories/RenunganRepository");
 const RenunganServices_1 = require("../services/RenunganServices");
 const response_1 = __importDefault(require("../../../utils/response"));
-const multer_1 = require("../../../utils/multer");
-// Inisiasi dependency injection
+const cloudStorage_1 = require("../../../utils/cloudStorage");
 const renunganRepo = new RenunganRepository_1.RenunganRepositories();
 const renunganService = new RenunganServices_1.RenunganServices(renunganRepo);
-/**
- * Helper: Ambil path image dari req.file atau req.body
- */
-const resolveImagePath = (req) => {
-    if (req.file) {
-        // Normalisasi format path URL publik: /public/images/namafile.ext
-        return `/public/images/${req.file.filename}`;
-    }
-    if (typeof req.body?.image === "string" && req.body.image.trim().length > 0) {
-        return req.body.image;
-    }
-    return undefined;
-};
-/**
- * POST /api/renungan
- * Buat renungan baru (Mendukung multipart/form-data dengan upload gambar)
- */
 const createRenungan = async (req, res, next) => {
     try {
-        const imagePath = resolveImagePath(req);
+        let imagePath;
+        if (req.file) {
+            imagePath = await (0, cloudStorage_1.uploadToStorage)(req.file, {
+                bucket: "renungan",
+                folder: "images",
+            });
+        }
+        else if (typeof req.body?.image === "string" &&
+            req.body.image.trim().length > 0) {
+            imagePath = req.body.image;
+        }
         const renungan = await renunganService.createRenungan({
             ...req.body,
             image: imagePath || "",
@@ -38,18 +30,10 @@ const createRenungan = async (req, res, next) => {
         (0, response_1.default)(res, 201, "Data Renungan berhasil dibuat", { renungan });
     }
     catch (error) {
-        // Jika proses gagal setelah multer menyimpan file, hapus file baru tersebut agar tidak jadi orphan
-        if (req.file) {
-            (0, multer_1.deleteUploadedFile)(`/public/images/${req.file.filename}`);
-        }
         next(error);
     }
 };
 exports.createRenungan = createRenungan;
-/**
- * GET /api/renungan
- * Ambil semua data renungan
- */
 const getAllRenungan = async (req, res, next) => {
     try {
         const renungan = await renunganService.getAllRenungan();
@@ -60,10 +44,6 @@ const getAllRenungan = async (req, res, next) => {
     }
 };
 exports.getAllRenungan = getAllRenungan;
-/**
- * GET /api/renungan/:slug
- * Ambil satu renungan berdasarkan slug
- */
 const getRenunganBySlug = async (req, res, next) => {
     try {
         const { slug } = req.params;
@@ -75,14 +55,20 @@ const getRenunganBySlug = async (req, res, next) => {
     }
 };
 exports.getRenunganBySlug = getRenunganBySlug;
-/**
- * PUT /api/renungan/:slug
- * Update data renungan (Mendukung upload gambar baru)
- */
 const updateRenungan = async (req, res, next) => {
     try {
         const { slug } = req.params;
-        const newImagePath = resolveImagePath(req);
+        let newImagePath;
+        if (req.file) {
+            newImagePath = await (0, cloudStorage_1.uploadToStorage)(req.file, {
+                bucket: "renungan",
+                folder: "images",
+            });
+        }
+        else if (typeof req.body?.image === "string" &&
+            req.body.image.trim().length > 0) {
+            newImagePath = req.body.image;
+        }
         const updatePayload = {
             ...req.body,
             ...(newImagePath ? { image: newImagePath } : {}),
@@ -91,21 +77,17 @@ const updateRenungan = async (req, res, next) => {
         (0, response_1.default)(res, 200, "Data Renungan berhasil diperbarui", { renungan });
     }
     catch (error) {
-        // Hapus file baru jika update gagal
-        if (req.file) {
-            (0, multer_1.deleteUploadedFile)(`/public/images/${req.file.filename}`);
-        }
         next(error);
     }
 };
 exports.updateRenungan = updateRenungan;
-/**
- * DELETE /api/renungan/:slug
- * Hapus data renungan dan file gambarnya
- */
 const deleteRenungan = async (req, res, next) => {
     try {
         const { slug } = req.params;
+        const existing = await renunganService.getRenungan(String(slug));
+        if (existing?.image) {
+            await (0, cloudStorage_1.deleteFromStorage)(existing.image, "renungan");
+        }
         await renunganService.deleteRenungan(String(slug));
         (0, response_1.default)(res, 200, "Data Renungan berhasil dihapus", null);
     }

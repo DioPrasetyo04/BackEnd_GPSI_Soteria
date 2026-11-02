@@ -2,20 +2,10 @@ import type { Request, Response, NextFunction } from "express";
 import { GalleryRepositories } from "../repositories/GalleryRepository";
 import { GalleryServices } from "../services/GalleryServices";
 import responses from "../../../utils/response";
-import { deleteUploadedFile } from "../../../utils/multer";
+import { uploadToStorage, deleteFromStorage } from "../../../utils/cloudStorage";
 
 const galleryRepo = new GalleryRepositories();
 const galleryService = new GalleryServices(galleryRepo);
-
-const resolveImagePath = (req: Request): string | undefined => {
-  if (req.file) {
-    return `/public/images/${req.file.filename}`;
-  }
-  if (typeof req.body?.image === "string" && req.body.image.trim().length > 0) {
-    return req.body.image;
-  }
-  return undefined;
-};
 
 export const createGallery = async (
   req: Request,
@@ -23,7 +13,19 @@ export const createGallery = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const imagePath = resolveImagePath(req);
+    let imagePath: string | undefined;
+
+    if (req.file) {
+      imagePath = await uploadToStorage(req.file, {
+        bucket: "gallery",
+        folder: "images",
+      });
+    } else if (
+      typeof req.body?.image === "string" &&
+      req.body.image.trim().length > 0
+    ) {
+      imagePath = req.body.image;
+    }
 
     const gallery = await galleryService.createGallery({
       ...req.body,
@@ -32,9 +34,6 @@ export const createGallery = async (
 
     responses(res, 201, "Data galeri berhasil ditambahkan", { gallery });
   } catch (error) {
-    if (req.file) {
-      deleteUploadedFile(`/public/images/${req.file.filename}`);
-    }
     next(error);
   }
 };
@@ -73,7 +72,19 @@ export const updateGallery = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const newImagePath = resolveImagePath(req);
+    let newImagePath: string | undefined;
+
+    if (req.file) {
+      newImagePath = await uploadToStorage(req.file, {
+        bucket: "gallery",
+        folder: "images",
+      });
+    } else if (
+      typeof req.body?.image === "string" &&
+      req.body.image.trim().length > 0
+    ) {
+      newImagePath = req.body.image;
+    }
 
     const updatePayload = {
       ...req.body,
@@ -87,9 +98,6 @@ export const updateGallery = async (
 
     responses(res, 200, "Data galeri berhasil diperbarui", { gallery });
   } catch (error) {
-    if (req.file) {
-      deleteUploadedFile(`/public/images/${req.file.filename}`);
-    }
     next(error);
   }
 };
@@ -101,6 +109,10 @@ export const deleteGallery = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+    const existing = await galleryService.getGalleryById(String(id));
+    if (existing?.image) {
+      await deleteFromStorage(existing.image, "gallery");
+    }
     await galleryService.deleteGallery(String(id));
     responses(res, 200, "Data galeri berhasil dihapus", null);
   } catch (error) {

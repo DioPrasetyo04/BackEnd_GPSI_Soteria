@@ -7,6 +7,8 @@ import {
   refreshTokenSchema,
   resendApprovalSchema,
   processApprovalSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from "../validator/AuthenticationValidator";
 import {
   login,
@@ -18,6 +20,9 @@ import {
   getApprovalInfo,
   processApproval,
   logout,
+  forgotPassword,
+  verifyResetPasswordToken,
+  resetPassword,
 } from "../controllers/AuthenticationController";
 import { verifyToken } from "../../../middlewares/VerifyToken";
 
@@ -68,5 +73,19 @@ authRoutes.post(
 );
 
 authRoutes.post("/logout", verifyToken, logout);
+
+authRoutes.post(
+  "/forgot-password",
+  validateRequest(forgotPasswordSchema),
+  forgotPassword,
+);
+
+authRoutes.get("/verify-reset-token", verifyResetPasswordToken);
+
+authRoutes.post(
+  "/reset-password",
+  validateRequest(resetPasswordSchema),
+  resetPassword,
+);
 
 export default authRoutes;

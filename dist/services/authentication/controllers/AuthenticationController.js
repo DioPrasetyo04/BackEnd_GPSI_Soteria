@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logout = exports.processApproval = exports.getApprovalInfo = exports.resendApproval = exports.register = exports.refreshToken = exports.facebookLogin = exports.googleLogin = exports.login = void 0;
+exports.resetPassword = exports.verifyResetPasswordToken = exports.forgotPassword = exports.logout = exports.processApproval = exports.getApprovalInfo = exports.resendApproval = exports.register = exports.refreshToken = exports.facebookLogin = exports.googleLogin = exports.login = void 0;
 const AuthenticationValidator_1 = require("../validator/AuthenticationValidator");
 const AuthRepositories_1 = require("../repositories/AuthRepositories");
 const AuthServices_1 = require("../services/AuthServices");
@@ -158,4 +158,38 @@ const logout = async (req, res, next) => {
     }
 };
 exports.logout = logout;
+const forgotPassword = async (req, res, next) => {
+    try {
+        const parsedData = AuthenticationValidator_1.forgotPasswordSchema.parse(req.body);
+        const result = await authServices.forgotPassword(parsedData.email);
+        (0, response_1.default)(res, 200, result.message, result);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.forgotPassword = forgotPassword;
+const verifyResetPasswordToken = async (req, res, next) => {
+    try {
+        const token = String(req.query.token || req.body?.token || "");
+        const parsed = AuthenticationValidator_1.verifyResetTokenSchema.parse({ token });
+        const result = await authServices.verifyResetToken(parsed.token);
+        (0, response_1.default)(res, 200, "Token valid", result);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.verifyResetPasswordToken = verifyResetPasswordToken;
+const resetPassword = async (req, res, next) => {
+    try {
+        const parsed = AuthenticationValidator_1.resetPasswordSchema.parse(req.body);
+        const result = await authServices.resetPassword(parsed.token, parsed.newPassword);
+        (0, response_1.default)(res, 200, result.message, result);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.resetPassword = resetPassword;
 //# sourceMappingURL=AuthenticationController.js.map

@@ -386,6 +386,98 @@ class AuthServices {
             };
         }
     }
+    async forgotPassword(email) {
+        if (!email || !(0, helpers_1.isValidEmail)(email)) {
+            throw new exceptions_1.InvariantError("Format email tidak valid");
+        }
+        const user = await this.userRepositories.getUserByEmail(email);
+        if (!user) {
+            throw new exceptions_1.InvariantError("Pengguna dengan alamat email tersebut tidak terdaftar di sistem");
+        }
+        if (user.status === "PENDING") {
+            throw new exceptions_1.InvariantError("Akun Anda masih menunggu verifikasi persetujuan Administrator. Belum dapat mengatur ulang kata sandi.");
+        }
+        if (user.status === "REJECTED") {
+            throw new exceptions_1.InvariantError("Pendaftaran akun ini telah ditolak oleh Administrator. Hubungi sekretariat gereja.");
+        }
+        // Rate Limiting Cooldown Check (Minimal jeda 60 detik)
+        const now = new Date();
+        const COOLDOWN_SECONDS = 60;
+        if (user.lastNotificationSentAt) {
+            const elapsed = Math.floor((now.getTime() - new Date(user.lastNotificationSentAt).getTime()) / 1000);
+            if (elapsed < COOLDOWN_SECONDS) {
+                const remaining = COOLDOWN_SECONDS - elapsed;
+                const err = new exceptions_1.ClientError(`Harap tunggu ${remaining} detik sebelum meminta tautan pengaturan ulang kata sandi lagi.`, 429);
+                err.data = { remainingSeconds: remaining };
+                throw err;
+            }
+        }
+        // Token expiration: 15 menit
+        const resetToken = `rst_${(0, nanoid_1.nanoid)(32)}`;
+        const resetExpires = new Date(now.getTime() + 15 * 60 * 1000);
+        await this.userRepositories.updateUser(user.id, {
+            resetPasswordToken: resetToken,
+            resetPasswordExpires: resetExpires,
+            lastNotificationSentAt: now,
+        });
+        // Kirim notifikasi via SMTP Gmail
+        (0, mailer_1.sendForgotPasswordNotification)({
+            email: user.email,
+            name: user.name,
+            resetToken,
+        }).catch((err) => console.error("Gagal mengirim email reset password via SMTP:", err));
+        return {
+            message: "Tautan untuk mengatur ulang kata sandi telah dikirimkan ke email Anda. Tautan berlaku selama 15 menit.",
+            cooldownSeconds: COOLDOWN_SECONDS,
+        };
+    }
+    async verifyResetToken(token) {
+        if (!token || typeof token !== "string") {
+            throw new exceptions_1.InvariantError("Token pengaturan ulang kata sandi wajib disertakan");
+        }
+        const user = await this.userRepositories.getUserByResetPasswordToken(token);
+        if (!user) {
+            throw new exceptions_1.InvariantError("Tautan pengaturan ulang kata sandi tidak valid atau telah digunakan.");
+        }
+        if (user.resetPasswordExpires &&
+            new Date(user.resetPasswordExpires).getTime() < Date.now()) {
+            throw new exceptions_1.InvariantError("Tautan pengaturan ulang kata sandi telah kedaluwarsa (masa berlaku 15 menit). Silakan ajukan permohonan baru.");
+        }
+        return {
+            valid: true,
+            email: user.email,
+            name: user.name,
+        };
+    }
+    async resetPassword(token, newPassword) {
+        if (!token) {
+            throw new exceptions_1.InvariantError("Token pengaturan ulang kata sandi wajib disertakan");
+        }
+        if (!newPassword || newPassword.length < 8) {
+            throw new exceptions_1.InvariantError("Kata sandi baru harus diisi dan memiliki panjang minimal 8 karakter");
+        }
+        const user = await this.userRepositories.getUserByResetPasswordToken(token);
+        if (!user) {
+            throw new exceptions_1.InvariantError("Tautan pengaturan ulang kata sandi tidak valid atau telah digunakan.");
+        }
+        if (user.resetPasswordExpires &&
+            new Date(user.resetPasswordExpires).getTime() < Date.now()) {
+            throw new exceptions_1.InvariantError("Tautan pengaturan ulang kata sandi telah kedaluwarsa. Silakan ajukan permohonan baru.");
+        }
+        const SALT_ROUNDS = parseInt(process.env.HASH_ROUNDS) || 10;
+        const hashedPassword = await bcryptjs_1.default.hash(newPassword, SALT_ROUNDS);
+        // Update password dan bersihkan token reset
+        await this.userRepositories.updateUser(user.id, {
+            password: hashedPassword,
+            resetPasswordToken: null,
+            resetPasswordExpires: null,
+        });
+        // Revoke semua sesi login aktif sebelumnya untuk keamanan maksimal
+        await this.authRepository.logout(user.id).catch(() => { });
+        return {
+            message: "Kata sandi Anda berhasil diperbarui. Silakan masuk menggunakan kata sandi baru Anda.",
+        };
+    }
 }
 exports.AuthServices = AuthServices;
 //# sourceMappingURL=AuthServices.js.map

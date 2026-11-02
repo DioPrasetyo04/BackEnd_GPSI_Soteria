@@ -35,7 +35,8 @@ exports.renunganCreateSchema = zod_1.z.object({
         .string()
         .optional()
         .transform((val) => (val ? new Date(val) : new Date())),
-}).strict();
+    image: zod_1.z.string().optional(),
+});
 /**
  * Schema untuk update renungan (PUT /api/renungan/:slug).
  * Semua field teks bersifat opsional.
@@ -67,5 +68,6 @@ exports.renunganUpdateSchema = zod_1.z.object({
         .string()
         .optional()
         .transform((val) => (val ? new Date(val) : undefined)),
-}).strict();
+    image: zod_1.z.string().optional(),
+});
 //# sourceMappingURL=RenunganSchema.js.map

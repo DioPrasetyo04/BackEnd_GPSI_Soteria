@@ -16,6 +16,11 @@ class UserRepositories {
     async getUserByApprovalToken(token) {
         return database_1.prisma.user.findUnique({ where: { approvalToken: token } });
     }
+    async getUserByResetPasswordToken(token) {
+        return database_1.prisma.user.findFirst({
+            where: { resetPasswordToken: token },
+        });
+    }
     async getAllUser() {
         return database_1.prisma.user.findMany({
             orderBy: { createdAt: "desc" },

@@ -77,6 +77,8 @@ soteriaV1.use("/galeri", GalleryRoutes_1.default);
 soteriaV1.use("/organization", OrganizationRoutes_1.default);
 soteriaV1.use("/warta", WartaRoutes_1.default);
 app.use("/api/soteria/v1", soteriaV1);
+// Direct fallback namespace (/auth/*)
+app.use("/auth", AuthRoutes_1.default);
 // Standard API namespace (/api/*)
 app.use("/api/auth", AuthRoutes_1.default);
 app.use("/api/dashboard", DashboardRoutes_1.default);

@@ -10,6 +10,7 @@ export interface UserInterfaceRepositories {
   getUser(id: string): Promise<UserInterface | null>;
   getUserByEmail(email: string): Promise<UserInterface | null>;
   getUserByApprovalToken(token: string): Promise<UserInterface | null>;
+  getUserByResetPasswordToken(token: string): Promise<UserInterface | null>;
   getAllUser(): Promise<UserInterface[]>;
   getUsers(options?: UserQueryOptions): Promise<UserQueryResult>;
   updateUser(id: string, data: Prisma.UserUpdateInput): Promise<UserInterface>;

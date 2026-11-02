@@ -1,1 +1,1 @@
-{"version":3,"file":"UserInterface.js","sourceRoot":"","sources":["../../../../src/services/user/data_interfaces/UserInterface.ts"],"names":[],"mappings":";;;AAiCa,QAAA,iBAAiB,GAAG;IAC/B,QAAQ;IACR,QAAQ;IACR,UAAU;IACV,WAAW;IACX,WAAW;IACX,YAAY;CACJ,CAAC"}
+{"version":3,"file":"UserInterface.js","sourceRoot":"","sources":["../../../../src/services/user/data_interfaces/UserInterface.ts"],"names":[],"mappings":";;;AAmCa,QAAA,iBAAiB,GAAG;IAC/B,QAAQ;IACR,QAAQ;IACR,UAAU;IACV,WAAW;IACX,WAAW;IACX,YAAY;CACJ,CAAC"}

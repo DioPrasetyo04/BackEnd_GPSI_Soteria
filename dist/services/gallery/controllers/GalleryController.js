@@ -7,21 +7,22 @@ exports.deleteGallery = exports.updateGallery = exports.getGalleryById = exports
 const GalleryRepository_1 = require("../repositories/GalleryRepository");
 const GalleryServices_1 = require("../services/GalleryServices");
 const response_1 = __importDefault(require("../../../utils/response"));
-const multer_1 = require("../../../utils/multer");
+const cloudStorage_1 = require("../../../utils/cloudStorage");
 const galleryRepo = new GalleryRepository_1.GalleryRepositories();
 const galleryService = new GalleryServices_1.GalleryServices(galleryRepo);
-const resolveImagePath = (req) => {
-    if (req.file) {
-        return `/public/images/${req.file.filename}`;
-    }
-    if (typeof req.body?.image === "string" && req.body.image.trim().length > 0) {
-        return req.body.image;
-    }
-    return undefined;
-};
 const createGallery = async (req, res, next) => {
     try {
-        const imagePath = resolveImagePath(req);
+        let imagePath;
+        if (req.file) {
+            imagePath = await (0, cloudStorage_1.uploadToStorage)(req.file, {
+                bucket: "gallery",
+                folder: "images",
+            });
+        }
+        else if (typeof req.body?.image === "string" &&
+            req.body.image.trim().length > 0) {
+            imagePath = req.body.image;
+        }
         const gallery = await galleryService.createGallery({
             ...req.body,
             image: imagePath || "",
@@ -29,9 +30,6 @@ const createGallery = async (req, res, next) => {
         (0, response_1.default)(res, 201, "Data galeri berhasil ditambahkan", { gallery });
     }
     catch (error) {
-        if (req.file) {
-            (0, multer_1.deleteUploadedFile)(`/public/images/${req.file.filename}`);
-        }
         next(error);
     }
 };
@@ -60,7 +58,17 @@ exports.getGalleryById = getGalleryById;
 const updateGallery = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const newImagePath = resolveImagePath(req);
+        let newImagePath;
+        if (req.file) {
+            newImagePath = await (0, cloudStorage_1.uploadToStorage)(req.file, {
+                bucket: "gallery",
+                folder: "images",
+            });
+        }
+        else if (typeof req.body?.image === "string" &&
+            req.body.image.trim().length > 0) {
+            newImagePath = req.body.image;
+        }
         const updatePayload = {
             ...req.body,
             ...(newImagePath ? { image: newImagePath } : {}),
@@ -69,9 +77,6 @@ const updateGallery = async (req, res, next) => {
         (0, response_1.default)(res, 200, "Data galeri berhasil diperbarui", { gallery });
     }
     catch (error) {
-        if (req.file) {
-            (0, multer_1.deleteUploadedFile)(`/public/images/${req.file.filename}`);
-        }
         next(error);
     }
 };
@@ -79,6 +84,10 @@ exports.updateGallery = updateGallery;
 const deleteGallery = async (req, res, next) => {
     try {
         const { id } = req.params;
+        const existing = await galleryService.getGalleryById(String(id));
+        if (existing?.image) {
+            await (0, cloudStorage_1.deleteFromStorage)(existing.image, "gallery");
+        }
         await galleryService.deleteGallery(String(id));
         (0, response_1.default)(res, 200, "Data galeri berhasil dihapus", null);
     }

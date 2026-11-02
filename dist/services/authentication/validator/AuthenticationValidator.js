@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.processApprovalSchema = exports.resendApprovalSchema = exports.refreshTokenSchema = exports.facebookAuthSchema = exports.googleAuthSchema = exports.authSchema = void 0;
+exports.resetPasswordSchema = exports.verifyResetTokenSchema = exports.forgotPasswordSchema = exports.processApprovalSchema = exports.resendApprovalSchema = exports.refreshTokenSchema = exports.facebookAuthSchema = exports.googleAuthSchema = exports.authSchema = void 0;
 const zod_1 = require("zod");
 exports.authSchema = zod_1.z
     .object({
@@ -57,6 +57,34 @@ exports.processApprovalSchema = zod_1.z
         message: "Aksi harus 'approve' atau 'reject'",
     }),
     reason: zod_1.z.string().optional(),
+})
+    .strict();
+exports.forgotPasswordSchema = zod_1.z
+    .object({
+    email: zod_1.z.string().email({ message: "Format email tidak valid" }),
+})
+    .strict();
+exports.verifyResetTokenSchema = zod_1.z
+    .object({
+    token: zod_1.z.string().min(1, { message: "Token reset password wajib disertakan" }),
+})
+    .strict();
+exports.resetPasswordSchema = zod_1.z
+    .object({
+    token: zod_1.z.string().min(1, { message: "Token reset password wajib disertakan" }),
+    newPassword: zod_1.z
+        .string()
+        .min(8, { message: "Kata sandi baru minimal 8 karakter" })
+        .regex(/[A-Z]/, {
+        message: "Kata sandi harus mengandung minimal 1 huruf besar",
+    })
+        .regex(/[a-z]/, {
+        message: "Kata sandi harus mengandung minimal 1 huruf kecil",
+    })
+        .regex(/[0-9]/, { message: "Kata sandi harus mengandung minimal 1 angka" })
+        .regex(/[^A-Za-z0-9]/, {
+        message: "Kata sandi harus mengandung minimal 1 karakter spesial",
+    }),
 })
     .strict();
 //# sourceMappingURL=AuthenticationValidator.js.map

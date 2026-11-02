@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WartaServices = void 0;
 const exceptions_1 = require("../../../exceptions");
 const helpers_1 = require("../../../utils/helpers");
-const multer_1 = require("../../../utils/multer");
+const cloudStorage_1 = require("../../../utils/cloudStorage");
 class WartaServices {
     wartaRepository;
     constructor(wartaRepository) {
@@ -54,7 +54,7 @@ class WartaServices {
         const updated = await this.wartaRepository.updateWarta(slug, payload);
         // Jika database sukses diperbarui dan file baru diunggah, bersihkan file lama dari storage
         if (data.fileUrl && typeof data.fileUrl === "string" && data.fileUrl !== existing.fileUrl) {
-            (0, multer_1.deleteUploadedFile)(existing.fileUrl);
+            (0, cloudStorage_1.deleteFromStorage)(existing.fileUrl, "warta").catch((err) => console.error("Gagal membersihkan berkas warta lama:", err));
         }
         return updated;
     }
@@ -64,7 +64,7 @@ class WartaServices {
         const isDeleted = await this.wartaRepository.deleteWarta(slug);
         // Jika sukses terhapus dari DB, bersihkan file fisik dari storage
         if (isDeleted && existing.fileUrl) {
-            (0, multer_1.deleteUploadedFile)(existing.fileUrl);
+            (0, cloudStorage_1.deleteFromStorage)(existing.fileUrl, "warta").catch((err) => console.error("Gagal menghapus berkas warta terhapus:", err));
         }
         return isDeleted;
     }
