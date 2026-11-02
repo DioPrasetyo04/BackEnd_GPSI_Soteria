@@ -1,0 +1,1 @@
+{"version":3,"file":"clientError.js","sourceRoot":"","sources":["../../src/exceptions/clientError.ts"],"names":[],"mappings":";;AAAA,MAAM,WAAY,SAAQ,KAAK;IAGpB;IAFT,YACE,OAAe,EACR,aAAqB,GAAG;QAE/B,KAAK,CAAC,OAAO,CAAC,CAAC;QAFR,eAAU,GAAV,UAAU,CAAc;QAG/B,IAAI,CAAC,IAAI,GAAG,cAAc,CAAC;QAC3B,IAAI,CAAC,UAAU,GAAG,UAAU,CAAC;IAC/B,CAAC;CACF;AAED,kBAAe,WAAW,CAAC"}

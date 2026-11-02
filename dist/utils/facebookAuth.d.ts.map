@@ -1,0 +1,1 @@
+{"version":3,"file":"facebookAuth.d.ts","sourceRoot":"","sources":["../../src/utils/facebookAuth.ts"],"names":[],"mappings":"AAEA,MAAM,WAAW,eAAe;IAC9B,EAAE,EAAE,MAAM,CAAC;IACX,IAAI,EAAE,MAAM,CAAC;IACb,KAAK,EAAE,MAAM,CAAC;IACd,OAAO,CAAC,EAAE,MAAM,CAAC;CAClB;AAED;;;GAGG;AACH,eAAO,MAAM,yBAAyB,GACpC,aAAa,MAAM,KAClB,OAAO,CAAC,eAAe,CAiEzB,CAAC"}

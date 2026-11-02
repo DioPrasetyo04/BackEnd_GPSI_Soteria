@@ -1,0 +1,1 @@
+{"version":3,"file":"clientError.d.ts","sourceRoot":"","sources":["../../src/exceptions/clientError.ts"],"names":[],"mappings":"AAAA,cAAM,WAAY,SAAQ,KAAK;IAGpB,UAAU,EAAE,MAAM;gBADzB,OAAO,EAAE,MAAM,EACR,UAAU,GAAE,MAAY;CAMlC;AAED,eAAe,WAAW,CAAC"}

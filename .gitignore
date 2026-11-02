@@ -15,7 +15,7 @@ node_modules/
 # ==============================================================================
 # 3. Build & Compilation Output (Kode hasil build typescript / tsc)
 # ==============================================================================
-dist/
+# dist/ (di-commit untuk deployment serverless Vercel)
 build/
 *.tsbuildinfo
 
