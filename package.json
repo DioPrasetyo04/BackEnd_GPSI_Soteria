@@ -9,7 +9,7 @@
     "start": "node dist/app.js",
     "start:dev": "ts-node src/app.ts",
     "build": "prisma generate && tsc",
-    "postinstall": "prisma generate && tsc",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:pull": "prisma db pull",
     "prisma:studio": "prisma studio",
