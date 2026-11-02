@@ -22,9 +22,8 @@ function getPrismaClient(): PrismaClient {
   const adapter = new PrismaPg({ connectionString });
   const client = new PrismaClient({ adapter });
 
-  if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.prisma = client;
-  }
+  // Cache singleton di instance global (reused across warm invocations)
+  globalForPrisma.prisma = client;
 
   return client;
 }
@@ -32,6 +31,15 @@ function getPrismaClient(): PrismaClient {
 // Lazy Proxy: mencegah serverless function crash saat startup / health check
 const prisma = new Proxy({} as PrismaClient, {
   get(_target, prop) {
+    if (
+      prop === "then" ||
+      prop === "catch" ||
+      prop === "finally" ||
+      prop === "$$typeof" ||
+      typeof prop === "symbol"
+    ) {
+      return undefined;
+    }
     const client = getPrismaClient();
     const value = (client as any)[prop];
     if (typeof value === "function") {

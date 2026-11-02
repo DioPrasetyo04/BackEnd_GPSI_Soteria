@@ -107,10 +107,17 @@ app.use(ErrorsHandler);
 // ─── EXPORT app (untuk Vercel serverless) ───────────────────────────────────
 export default app;
 
-// ─── START SERVER (hanya saat dijalankan langsung, bukan di Vercel) ────────
-if (process.env.VERCEL !== "1") {
+// ─── START SERVER (hanya saat dijalankan langsung, bukan di Vercel/serverless) ─
+const isServerless =
+  process.env.VERCEL === "1" ||
+  Boolean(process.env.VERCEL_ENV) ||
+  Boolean(process.env.NOW_REGION) ||
+  Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME) ||
+  Boolean(process.env.LAMBDA_TASK_ROOT);
+
+if (!isServerless && process.env.NODE_ENV !== "test") {
   const HOST = String(process.env.HOST || "localhost");
-  const PORT = parseInt(process.env.PORT || "3000", 10);
+  const PORT = parseInt(process.env.PORT || "3005", 10);
 
   ConnectDatabase()
     .catch((err) => console.error("Initial DB connection failed:", err))
