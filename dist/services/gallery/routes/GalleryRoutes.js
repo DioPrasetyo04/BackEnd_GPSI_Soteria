@@ -14,12 +14,14 @@ const galleryRoutes = express_1.default.Router();
  *
  * POST   /api/gallery       → Tambah foto baru (form-data: field "image" + text fields)
  * GET    /api/gallery       → Ambil semua data galeri (urut terbaru)
+ * GET    /api/gallery/home  → Ambil galeri beranda (showInHome | highlight)
  * GET    /api/gallery/:id   → Ambil detail galeri by ID
  * PUT    /api/gallery/:id   → Update galeri (opsional upload file "image" baru)
  * DELETE /api/gallery/:id   → Hapus galeri dan hapus file foto dari disk
  */
 galleryRoutes.post("/", multer_1.uploadDynamicfile.single("image"), (0, ValidateRequest_1.validateRequest)(GallerySchema_1.galleryCreateSchema), GalleryController_1.createGallery);
 galleryRoutes.get("/", GalleryController_1.getAllGallery);
+galleryRoutes.get("/home", GalleryController_1.getHomeGallery);
 galleryRoutes.get("/:id", GalleryController_1.getGalleryById);
 galleryRoutes.put("/:id", multer_1.uploadDynamicfile.single("image"), (0, ValidateRequest_1.validateRequest)(GallerySchema_1.galleryUpdateSchema), GalleryController_1.updateGallery);
 galleryRoutes.delete("/:id", GalleryController_1.deleteGallery);

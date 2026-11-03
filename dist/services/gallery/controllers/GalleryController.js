@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteGallery = exports.updateGallery = exports.getGalleryById = exports.getAllGallery = exports.createGallery = void 0;
+exports.deleteGallery = exports.updateGallery = exports.getGalleryById = exports.getHomeGallery = exports.getAllGallery = exports.createGallery = void 0;
 const GalleryRepository_1 = require("../repositories/GalleryRepository");
 const GalleryServices_1 = require("../services/GalleryServices");
 const response_1 = __importDefault(require("../../../utils/response"));
@@ -44,6 +44,19 @@ const getAllGallery = async (req, res, next) => {
     }
 };
 exports.getAllGallery = getAllGallery;
+const getHomeGallery = async (req, res, next) => {
+    try {
+        const rawLimit = req.query.limit;
+        const parsed = typeof rawLimit === "string" ? Number.parseInt(rawLimit, 10) : NaN;
+        const limit = Number.isFinite(parsed) && parsed > 0 ? parsed : 5;
+        const gallery = await galleryService.getHomeGallery(limit);
+        (0, response_1.default)(res, 200, "Berhasil mengambil galeri beranda", { gallery });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getHomeGallery = getHomeGallery;
 const getGalleryById = async (req, res, next) => {
     try {
         const { id } = req.params;

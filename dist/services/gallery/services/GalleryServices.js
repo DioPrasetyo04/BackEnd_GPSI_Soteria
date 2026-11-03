@@ -11,6 +11,9 @@ class GalleryServices {
     async getAllGallery() {
         return this.galleryRepository.getAllGallery();
     }
+    async getHomeGallery(limit) {
+        return this.galleryRepository.getHomeGallery(limit);
+    }
     async getGalleryById(id) {
         const gallery = await this.galleryRepository.getGallery(id);
         if (!gallery) {

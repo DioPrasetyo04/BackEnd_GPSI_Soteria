@@ -14,6 +14,16 @@ class GalleryRepositories {
             orderBy: { date: "desc" },
         });
     }
+    async getHomeGallery(limit = 5) {
+        const take = limit > 0 ? limit : 5;
+        return database_1.prisma.gallery.findMany({
+            where: {
+                OR: [{ showInHome: true }, { highlight: true }],
+            },
+            orderBy: [{ highlight: "desc" }, { date: "desc" }],
+            take,
+        });
+    }
     async updateGallery(id, data) {
         return database_1.prisma.gallery.update({ where: { id }, data });
     }

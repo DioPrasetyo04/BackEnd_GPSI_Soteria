@@ -5,6 +5,7 @@ export interface GalleryInterfaceRepository {
   createGallery(data: Prisma.GalleryCreateInput): Promise<GalleryInterface>;
   getGallery(id: string): Promise<GalleryInterface | null>;
   getAllGallery(): Promise<GalleryInterface[]>;
+  getHomeGallery(limit?: number): Promise<GalleryInterface[]>;
   updateGallery(
     id: string,
     data: Prisma.GalleryUpdateInput,

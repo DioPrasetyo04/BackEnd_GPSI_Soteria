@@ -13,6 +13,10 @@ export class GalleryServices {
     return this.galleryRepository.getAllGallery();
   }
 
+  async getHomeGallery(limit?: number): Promise<GalleryInterface[]> {
+    return this.galleryRepository.getHomeGallery(limit);
+  }
+
   async getGalleryById(id: string): Promise<GalleryInterface> {
     const gallery = await this.galleryRepository.getGallery(id);
     if (!gallery) {

@@ -51,6 +51,24 @@ export const getAllGallery = async (
   }
 };
 
+export const getHomeGallery = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const rawLimit = req.query.limit;
+    const parsed =
+      typeof rawLimit === "string" ? Number.parseInt(rawLimit, 10) : NaN;
+    const limit = Number.isFinite(parsed) && parsed > 0 ? parsed : 5;
+
+    const gallery = await galleryService.getHomeGallery(limit);
+    responses(res, 200, "Berhasil mengambil galeri beranda", { gallery });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getGalleryById = async (
   req: Request,
   res: Response,

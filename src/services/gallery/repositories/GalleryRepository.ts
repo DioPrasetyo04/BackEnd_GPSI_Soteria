@@ -20,6 +20,17 @@ export class GalleryRepositories implements GalleryInterfaceRepository {
     });
   }
 
+  async getHomeGallery(limit = 5): Promise<GalleryInterface[]> {
+    const take = limit > 0 ? limit : 5;
+    return prisma.gallery.findMany({
+      where: {
+        OR: [{ showInHome: true }, { highlight: true }],
+      },
+      orderBy: [{ highlight: "desc" }, { date: "desc" }],
+      take,
+    });
+  }
+
   async updateGallery(
     id: string,
     data: Prisma.GalleryUpdateInput,
