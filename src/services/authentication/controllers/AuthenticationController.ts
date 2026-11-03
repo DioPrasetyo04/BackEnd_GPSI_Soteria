@@ -21,6 +21,32 @@ const authRepo = new AuthRepositories();
 const userRepo = new UserRepositories();
 const authServices = new AuthServices(authRepo, userRepo);
 
+function getRequestOrigin(req: Request): string | undefined {
+  const customHeader =
+    (req.headers["x-frontend-url"] as string) ||
+    (req.headers["x-client-url"] as string);
+  if (customHeader && typeof customHeader === "string") {
+    return customHeader.trim().replace(/\/+$/, "");
+  }
+
+  const origin = req.headers.origin;
+  if (origin && typeof origin === "string") {
+    return origin.trim().replace(/\/+$/, "");
+  }
+
+  const referer = req.headers.referer;
+  if (referer && typeof referer === "string") {
+    try {
+      const parsed = new URL(referer);
+      return parsed.origin;
+    } catch {
+      // ignore
+    }
+  }
+
+  return undefined;
+}
+
 export const login = async (
   req: Request,
   res: Response,
@@ -125,7 +151,8 @@ export const register = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const result = await authServices.register(req.body);
+    const clientOrigin = getRequestOrigin(req);
+    const result = await authServices.register(req.body, clientOrigin);
     responses(
       res,
       201,
@@ -144,7 +171,8 @@ export const resendApproval = async (
 ): Promise<void> => {
   try {
     const parsed = resendApprovalSchema.parse(req.body);
-    const result = await authServices.resendApproval(parsed.email);
+    const clientOrigin = getRequestOrigin(req);
+    const result = await authServices.resendApproval(parsed.email, clientOrigin);
     responses(res, 200, result.message, result);
   } catch (error: any) {
     if (error.statusCode === 429 || error.status === 429) {
@@ -221,7 +249,11 @@ export const forgotPassword = async (
 ): Promise<void> => {
   try {
     const parsedData = forgotPasswordSchema.parse(req.body);
-    const result = await authServices.forgotPassword(parsedData.email);
+    const clientOrigin = getRequestOrigin(req);
+    const result = await authServices.forgotPassword(
+      parsedData.email,
+      clientOrigin,
+    );
     responses(res, 200, result.message, result);
   } catch (error) {
     next(error);

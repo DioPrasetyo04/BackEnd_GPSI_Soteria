@@ -308,7 +308,10 @@ export class AuthServices {
     await this.authRepository.logout(tokenOrUserId);
   }
 
-  async register(data: Prisma.UserCreateInput): Promise<UserPublicInterface> {
+  async register(
+    data: Prisma.UserCreateInput,
+    clientOrigin?: string,
+  ): Promise<UserPublicInterface> {
     // 1. Validasi format email
     if (!isValidEmail(data.email)) {
       throw new InvariantError("Format email tidak valid");
@@ -391,6 +394,7 @@ export class AuthServices {
             createdAt: newUser.createdAt,
           },
           approvalToken,
+          baseUrl: clientOrigin,
         });
       })
       .catch((err) => {
@@ -402,6 +406,7 @@ export class AuthServices {
 
   async resendApproval(
     email: string,
+    clientOrigin?: string,
   ): Promise<{ message: string; nextAllowedSeconds: number }> {
     if (!email || !isValidEmail(email)) {
       throw new InvariantError("Format email tidak valid");
@@ -472,6 +477,7 @@ export class AuthServices {
         createdAt: user.createdAt,
       },
       approvalToken: token,
+      baseUrl: clientOrigin,
     }).catch((err) => console.error("Resend approval email error:", err));
 
     return {
@@ -541,6 +547,7 @@ export class AuthServices {
 
   async forgotPassword(
     email: string,
+    clientOrigin?: string,
   ): Promise<{ message: string; cooldownSeconds: number }> {
     if (!email || !isValidEmail(email)) {
       throw new InvariantError("Format email tidak valid");
@@ -598,6 +605,7 @@ export class AuthServices {
       email: user.email,
       name: user.name,
       resetToken,
+      baseUrl: clientOrigin,
     }).catch((err) =>
       console.error("Gagal mengirim email reset password via SMTP:", err),
     );

@@ -26,12 +26,75 @@ export interface ApprovalEmailPayload {
     createdAt?: Date;
   };
   approvalToken: string;
+  baseUrl?: string;
 }
 
 export interface ForgotPasswordEmailPayload {
   email: string;
   name: string;
   resetToken: string;
+  baseUrl?: string;
+}
+
+/**
+ * Resolves the frontend base URL dynamically with fallback priority:
+ * 1. Explicit baseUrl passed from the incoming request (Origin / Referer / x-frontend-url header)
+ * 2. ADMIN_FRONTEND_URL or FRONTEND_URL environment variable
+ * 3. Any non-localhost deployed origin found in CORS_ORIGIN (e.g., https://*.vercel.app)
+ * 4. Localhost fallback
+ */
+export function resolveFrontendBaseUrl(providedUrl?: string): string {
+  const envAdminUrl = (
+    process.env.ADMIN_FRONTEND_URL ||
+    process.env.FRONTEND_URL ||
+    ""
+  )
+    .trim()
+    .replace(/\/+$/, "");
+
+  // 1. If explicit URL is provided from request and is a live non-localhost origin
+  if (providedUrl && typeof providedUrl === "string") {
+    const trimmed = providedUrl.trim().replace(/\/+$/, "");
+    if (trimmed && !trimmed.includes("localhost") && !trimmed.includes("127.0.0.1")) {
+      return trimmed;
+    }
+  }
+
+  // 2. If ADMIN_FRONTEND_URL or FRONTEND_URL is explicitly set in environment variables
+  if (envAdminUrl) {
+    return envAdminUrl;
+  }
+
+  // 3. Scan CORS_ORIGIN for any deployed / Vercel origin (*.vercel.app or https://)
+  const isProduction =
+    process.env.NODE_ENV === "production" ||
+    process.env.VERCEL === "1" ||
+    Boolean(process.env.VERCEL_ENV);
+
+  const corsOrigins = (process.env.CORS_ORIGIN || "")
+    .split(",")
+    .map((s) => s.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+
+  const deployedOrigin = corsOrigins.find(
+    (o) =>
+      !o.includes("localhost") &&
+      !o.includes("127.0.0.1") &&
+      (o.includes("vercel.app") || o.startsWith("https://")),
+  );
+
+  if (deployedOrigin && (isProduction || !providedUrl || providedUrl.includes("localhost"))) {
+    return deployedOrigin;
+  }
+
+  // 4. If request provided a URL (even localhost during local development)
+  if (providedUrl && typeof providedUrl === "string") {
+    const trimmed = providedUrl.trim().replace(/\/+$/, "");
+    if (trimmed) return trimmed;
+  }
+
+  // 5. Fallback to first origin in CORS_ORIGIN or default localhost:5173
+  return corsOrigins[0] || "http://localhost:5173";
 }
 
 interface LogoConfig {
@@ -83,13 +146,9 @@ export async function sendAdminApprovalNotification({
   adminEmails,
   applicant,
   approvalToken,
+  baseUrl,
 }: ApprovalEmailPayload): Promise<boolean> {
-  const frontendBaseUrl =
-    process.env.FRONTEND_URL ||
-    (process.env.CORS_ORIGIN
-      ? process.env.CORS_ORIGIN.split(",")[0].trim()
-      : "http://localhost:5173");
-
+  const frontendBaseUrl = resolveFrontendBaseUrl(baseUrl);
   const logoConfig = getLogoConfig(frontendBaseUrl);
 
   const approveUrl = `${frontendBaseUrl}/auth/verify-approval?token=${approvalToken}&action=approve`;
@@ -216,13 +275,9 @@ export async function sendForgotPasswordNotification({
   email,
   name,
   resetToken,
+  baseUrl,
 }: ForgotPasswordEmailPayload): Promise<boolean> {
-  const frontendBaseUrl =
-    process.env.FRONTEND_URL ||
-    (process.env.CORS_ORIGIN
-      ? process.env.CORS_ORIGIN.split(",")[0].trim()
-      : "http://localhost:5173");
-
+  const frontendBaseUrl = resolveFrontendBaseUrl(baseUrl);
   const logoConfig = getLogoConfig(frontendBaseUrl);
 
   const resetUrl = `${frontendBaseUrl}/auth/reset-password?token=${encodeURIComponent(resetToken)}`;

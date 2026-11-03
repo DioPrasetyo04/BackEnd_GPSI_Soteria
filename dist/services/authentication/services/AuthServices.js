@@ -215,7 +215,7 @@ class AuthServices {
         }
         await this.authRepository.logout(tokenOrUserId);
     }
-    async register(data) {
+    async register(data, clientOrigin) {
         // 1. Validasi format email
         if (!(0, helpers_1.isValidEmail)(data.email)) {
             throw new exceptions_1.InvariantError("Format email tidak valid");
@@ -278,6 +278,7 @@ class AuthServices {
                     createdAt: newUser.createdAt,
                 },
                 approvalToken,
+                baseUrl: clientOrigin,
             });
         })
             .catch((err) => {
@@ -285,7 +286,7 @@ class AuthServices {
         });
         return toPublic(newUser);
     }
-    async resendApproval(email) {
+    async resendApproval(email, clientOrigin) {
         if (!email || !(0, helpers_1.isValidEmail)(email)) {
             throw new exceptions_1.InvariantError("Format email tidak valid");
         }
@@ -337,6 +338,7 @@ class AuthServices {
                 createdAt: user.createdAt,
             },
             approvalToken: token,
+            baseUrl: clientOrigin,
         }).catch((err) => console.error("Resend approval email error:", err));
         return {
             message: "Notifikasi verifikasi berhasil dikirimkan ulang ke Administrator",
@@ -386,7 +388,7 @@ class AuthServices {
             };
         }
     }
-    async forgotPassword(email) {
+    async forgotPassword(email, clientOrigin) {
         if (!email || !(0, helpers_1.isValidEmail)(email)) {
             throw new exceptions_1.InvariantError("Format email tidak valid");
         }
@@ -425,6 +427,7 @@ class AuthServices {
             email: user.email,
             name: user.name,
             resetToken,
+            baseUrl: clientOrigin,
         }).catch((err) => console.error("Gagal mengirim email reset password via SMTP:", err));
         return {
             message: "Tautan untuk mengatur ulang kata sandi telah dikirimkan ke email Anda. Tautan berlaku selama 15 menit.",

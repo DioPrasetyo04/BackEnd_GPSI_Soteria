@@ -12,6 +12,28 @@ const response_1 = __importDefault(require("../../../utils/response"));
 const authRepo = new AuthRepositories_1.AuthRepositories();
 const userRepo = new UserRpositories_1.UserRepositories();
 const authServices = new AuthServices_1.AuthServices(authRepo, userRepo);
+function getRequestOrigin(req) {
+    const customHeader = req.headers["x-frontend-url"] ||
+        req.headers["x-client-url"];
+    if (customHeader && typeof customHeader === "string") {
+        return customHeader.trim().replace(/\/+$/, "");
+    }
+    const origin = req.headers.origin;
+    if (origin && typeof origin === "string") {
+        return origin.trim().replace(/\/+$/, "");
+    }
+    const referer = req.headers.referer;
+    if (referer && typeof referer === "string") {
+        try {
+            const parsed = new URL(referer);
+            return parsed.origin;
+        }
+        catch {
+            // ignore
+        }
+    }
+    return undefined;
+}
 const login = async (req, res, next) => {
     try {
         const parsedData = AuthenticationValidator_1.authSchema
@@ -91,7 +113,8 @@ const refreshToken = async (req, res, next) => {
 exports.refreshToken = refreshToken;
 const register = async (req, res, next) => {
     try {
-        const result = await authServices.register(req.body);
+        const clientOrigin = getRequestOrigin(req);
+        const result = await authServices.register(req.body, clientOrigin);
         (0, response_1.default)(res, 201, "Pendaftaran berhasil. Akun Anda sedang menunggu verifikasi oleh Administrator.", result);
     }
     catch (error) {
@@ -102,7 +125,8 @@ exports.register = register;
 const resendApproval = async (req, res, next) => {
     try {
         const parsed = AuthenticationValidator_1.resendApprovalSchema.parse(req.body);
-        const result = await authServices.resendApproval(parsed.email);
+        const clientOrigin = getRequestOrigin(req);
+        const result = await authServices.resendApproval(parsed.email, clientOrigin);
         (0, response_1.default)(res, 200, result.message, result);
     }
     catch (error) {
@@ -161,7 +185,8 @@ exports.logout = logout;
 const forgotPassword = async (req, res, next) => {
     try {
         const parsedData = AuthenticationValidator_1.forgotPasswordSchema.parse(req.body);
-        const result = await authServices.forgotPassword(parsedData.email);
+        const clientOrigin = getRequestOrigin(req);
+        const result = await authServices.forgotPassword(parsedData.email, clientOrigin);
         (0, response_1.default)(res, 200, result.message, result);
     }
     catch (error) {
