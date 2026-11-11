@@ -43,12 +43,22 @@ export async function uploadToStorage(
         auth: { persistSession: false },
       });
 
+      const uploadOptions: {
+        contentType: string;
+        upsert: boolean;
+        contentDisposition?: string;
+      } = {
+        contentType: file.mimetype,
+        upsert: true,
+      };
+      if (file.mimetype === "application/pdf") {
+        // inline agar PDF bisa dibuka/di-render (bukan dipaksa unduh)
+        uploadOptions.contentDisposition = "inline";
+      }
+
       const { data, error } = await supabase.storage
         .from(options.bucket)
-        .upload(fileName, file.buffer, {
-          contentType: file.mimetype,
-          upsert: true,
-        });
+        .upload(fileName, file.buffer, uploadOptions);
 
       if (!error && data) {
         const { data: publicData } = supabase.storage

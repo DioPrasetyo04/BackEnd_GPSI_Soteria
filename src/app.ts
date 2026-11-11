@@ -53,7 +53,22 @@ app.use(
 
 // ─── STATIC FILES ───────────────────────────────────────────────────────────
 // Akses file/gambar publik, contoh: http://localhost:3000/public/images/xxx.png
-app.use("/public", express.static(path.join(process.cwd(), "public")));
+// Header CORS + Content-Disposition inline agar PDF bisa di-render pdf.js di mobile
+app.use(
+  "/public",
+  express.static(path.join(process.cwd(), "public"), {
+    setHeaders(res, filePath) {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+
+      if (filePath.toLowerCase().endsWith(".pdf")) {
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", "inline");
+        res.setHeader("X-Content-Type-Options", "nosniff");
+      }
+    },
+  }),
+);
 
 // ─── BODY PARSERS ───────────────────────────────────────────────────────────
 // Express 5 sudah bundle express.json() dan express.urlencoded().
